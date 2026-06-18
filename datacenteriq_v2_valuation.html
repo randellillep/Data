@@ -1,0 +1,742 @@
+
+<h2 class="sr-only">DataCenterIQ v2 — Data center valuation, SPV intelligence, and scenario stress testing platform</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:var(--color-background-primary);
+  --bg2:var(--color-background-secondary);
+  --bg3:var(--color-background-tertiary);
+  --t1:var(--color-text-primary);
+  --t2:var(--color-text-secondary);
+  --t3:var(--color-text-tertiary);
+  --bdr:var(--color-border-tertiary);
+  --bdr2:var(--color-border-secondary);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-t:#0C447C;
+  --green:#1D9E75;--green-bg:#EAF3DE;--green-t:#3B6D11;
+  --red:#E24B4A;--red-bg:#FCEBEB;--red-t:#A32D2D;
+  --amber:#BA7517;--amber-bg:#FAEEDA;--amber-t:#854F0B;
+  --r:var(--border-radius-md);--rl:var(--border-radius-lg);
+}
+body{font-family:var(--font-sans);background:var(--bg3);color:var(--t1);font-size:13px}
+
+.shell{display:flex;flex-direction:column;height:100vh;min-height:700px}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--bdr2);padding:0 16px;display:flex;align-items:center;gap:0;height:50px;flex-shrink:0}
+.logo{font-size:14px;font-weight:500;color:var(--t1);display:flex;align-items:center;gap:8px;margin-right:20px}
+.logo-sq{width:24px;height:24px;background:var(--blue);border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.tabs{display:flex;height:100%}
+.tab{padding:0 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--t2);border:none;background:none;border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover:not(.on){color:var(--t1)}
+.tr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:999px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--bg);border-right:0.5px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+.sb{padding:12px;border-bottom:0.5px solid var(--bdr)}
+.sbl{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.fi{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--t2)}
+.fi:hover{background:var(--bg2)}
+.fi.on{background:var(--blue-bg);color:var(--blue-t);font-weight:500}
+.fid{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.fic{margin-left:auto;font-size:10px;opacity:.5}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc{background:var(--bg2);border-radius:var(--r);padding:9px}
+.sv{font-size:16px;font-weight:500;color:var(--t1);line-height:1.1}
+.sl{font-size:10px;color:var(--t2);margin-top:2px}
+
+.content{flex:1;overflow:hidden;display:flex}
+
+/* ASSET LIST */
+.asset-list{width:300px;flex-shrink:0;background:var(--bg);border-right:0.5px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+.al-header{padding:10px 12px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.al-search{flex:1;background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);padding:5px 9px;font-size:12px;color:var(--t1);outline:none}
+.al-search::placeholder{color:var(--t3)}
+.al-sort{font-size:11px;color:var(--t2);background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);padding:5px 8px;cursor:pointer;outline:none;color:var(--t1)}
+.asset-row{padding:10px 12px;border-bottom:0.5px solid var(--bdr);cursor:pointer;transition:background .1s;display:flex;flex-direction:column;gap:4px}
+.asset-row:hover{background:var(--bg2)}
+.asset-row.sel{background:var(--blue-bg)}
+.ar-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.ar-name{font-size:12px;font-weight:500;color:var(--t1);line-height:1.3}
+.ar-sub{font-size:11px;color:var(--t2)}
+.score-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:999px;flex-shrink:0}
+.ar-metrics{display:flex;gap:10px;margin-top:2px}
+.arm{font-size:11px;color:var(--t2)}
+.arm span{font-weight:500;color:var(--t1)}
+.spv-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--blue-bg);color:var(--blue-t);font-weight:500}
+.warn-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--red-bg);color:var(--red-t);font-weight:500}
+
+/* DETAIL / VALUATION */
+.detail{flex:1;overflow-y:auto;background:var(--bg3)}
+.dno{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--t3);background:var(--bg3)}
+
+.inv-header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0;position:sticky;top:0;z-index:5}
+.inv-title{font-size:15px;font-weight:500;color:var(--t1)}
+.inv-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.inv-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-sm{font-size:11px;padding:5px 10px;border-radius:var(--r);border:0.5px solid var(--bdr2);background:none;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:4px}
+.btn-sm:hover{background:var(--bg2);color:var(--t1)}
+.btn-sm.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-sm.primary:hover{opacity:.9}
+
+.inv-body{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+
+.section{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bdr);overflow:hidden}
+.sec-head{padding:10px 14px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.sec-title{font-size:11px;font-weight:500;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:6px}
+.sec-body{padding:12px 14px}
+
+.val-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.val-card{background:var(--bg2);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:2px}
+.val-v{font-size:18px;font-weight:500;color:var(--t1);line-height:1.1}
+.val-l{font-size:10px;color:var(--t2)}
+.val-d{font-size:10px;color:var(--t3);margin-top:3px}
+
+.irr-bar-wrap{margin:6px 0}
+.irr-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.irr-bg{background:var(--bg2);border-radius:999px;height:5px}
+.irr-fill{height:5px;border-radius:999px}
+
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--bdr);font-size:12px}
+.mrow:last-child{border:none}
+.mk{color:var(--t2);display:flex;align-items:center;gap:5px}
+.mv{font-weight:500;color:var(--t1);text-align:right;max-width:60%}
+
+/* CAPEX STACK */
+.capex-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
+.capex-label{width:100px;color:var(--t2);flex-shrink:0}
+.capex-bar-w{flex:1;background:var(--bg2);border-radius:999px;height:6px}
+.capex-bar{height:6px;border-radius:999px}
+.capex-val{width:55px;text-align:right;font-weight:500;color:var(--t1)}
+
+/* ENERGY */
+.energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.e-card{background:var(--bg2);border-radius:var(--r);padding:9px}
+.e-v{font-size:15px;font-weight:500;color:var(--t1)}
+.e-l{font-size:10px;color:var(--t2);margin-top:1px}
+.e-status{font-size:10px;padding:2px 6px;border-radius:999px;margin-top:4px;display:inline-block;font-weight:500}
+
+/* SITE SCORE */
+.score-ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.score-ring svg{position:absolute;top:0;left:0}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:var(--t1)}
+.score-breakdown{flex:1;display:flex;flex-direction:column;gap:5px}
+.sb-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.sb-label{width:110px;color:var(--t2);flex-shrink:0}
+.sb-bar-w{flex:1;background:var(--bg2);border-radius:999px;height:4px}
+.sb-bar{height:4px;border-radius:999px;background:var(--blue)}
+.sb-val{width:28px;text-align:right;font-weight:500;color:var(--t1)}
+
+/* SCENARIO */
+.scenario-wrap{display:flex;flex-direction:column;gap:10px}
+.sc-slider-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.sc-label{width:170px;color:var(--t2);flex-shrink:0}
+.sc-range{flex:1;accent-color:var(--blue)}
+.sc-val{width:50px;text-align:right;font-weight:500;color:var(--t1)}
+.sc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.sc-res{background:var(--bg2);border-radius:var(--r);padding:9px}
+.sc-rv{font-size:15px;font-weight:500}
+.sc-rl{font-size:10px;color:var(--t2);margin-top:1px}
+.sc-delta{font-size:10px;margin-top:3px;font-weight:500}
+
+/* COMPARE */
+.compare-wrap{flex:1;overflow-y:auto;padding:16px;background:var(--bg3)}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.cmp-card{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);padding:12px;cursor:pointer;transition:border-color .15s}
+.cmp-card:hover{border-color:var(--bdr2)}
+.cmp-card.selected{border-color:var(--blue);border-width:1.5px}
+.cmp-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:6px}
+.cmp-metrics{display:flex;flex-direction:column;gap:4px}
+.cmp-m{display:flex;justify-content:space-between;font-size:11px}
+.cmp-mk{color:var(--t2)}
+.cmp-mv{font-weight:500;color:var(--t1)}
+.cmp-score-bar{height:3px;border-radius:999px;margin-top:8px}
+.compare-table-wrap{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);overflow:hidden;margin-top:12px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:11px}
+.cmp-table th{padding:8px 10px;background:var(--bg2);color:var(--t2);text-align:left;font-weight:500;border-bottom:0.5px solid var(--bdr)}
+.cmp-table td{padding:7px 10px;border-bottom:0.5px solid var(--bdr);color:var(--t1)}
+.cmp-table tr:last-child td{border:none}
+.cmp-table td.best{color:var(--green-t);font-weight:500}
+.cmp-table td.worst{color:var(--red-t)}
+</style>
+
+<div class="shell">
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-sq"><i class="ti ti-building-skyscraper" aria-hidden="true"></i></div>
+    DataCenterIQ
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="goTab('assets',this)"><i class="ti ti-list-details" aria-hidden="true"></i> Assets</button>
+    <button class="tab" onclick="goTab('compare',this)"><i class="ti ti-layout-columns" aria-hidden="true"></i> Compare</button>
+    <button class="tab" onclick="goTab('spv',this)"><i class="ti ti-shield-lock" aria-hidden="true"></i> SPV Monitor</button>
+  </div>
+  <div class="tr">
+    <span class="live"><span class="dot"></span>Live</span>
+    <span style="font-size:11px;color:var(--t3)">847 assets · 143 SPVs</span>
+  </div>
+</div>
+
+<div class="body">
+  <aside class="sidebar">
+    <div class="sb">
+      <div class="sbl">Region</div>
+      <div class="fi on" onclick="filterR('all',this)"><div class="fid" style="background:#888"></div>All<span class="fic">847</span></div>
+      <div class="fi" onclick="filterR('na',this)"><div class="fid" style="background:#185FA5"></div>North America<span class="fic">312</span></div>
+      <div class="fi" onclick="filterR('eu',this)"><div class="fid" style="background:#1D9E75"></div>Europe<span class="fic">218</span></div>
+      <div class="fi" onclick="filterR('apac',this)"><div class="fid" style="background:#D85A30"></div>Asia-Pacific<span class="fic">247</span></div>
+      <div class="fi" onclick="filterR('mea',this)"><div class="fid" style="background:#BA7517"></div>Middle East<span class="fic">70</span></div>
+    </div>
+    <div class="sb">
+      <div class="sbl">Global snapshot</div>
+      <div class="sg">
+        <div class="sc"><div class="sv">2.4 TW</div><div class="sl">Capacity</div></div>
+        <div class="sc"><div class="sv">$847B</div><div class="sl">Asset value</div></div>
+        <div class="sc"><div class="sv">$2.1T</div><div class="sl">Total debt</div></div>
+        <div class="sc"><div class="sv">143</div><div class="sl">Active SPVs</div></div>
+      </div>
+    </div>
+    <div class="sb" style="flex:1">
+      <div class="sbl">Risk alerts</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--red-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--red-t)"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 3 SPVs — refi &lt;90d · $4.2B</div>
+        <div style="background:var(--amber-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--amber-t)"><i class="ti ti-bolt" aria-hidden="true"></i> Energy spike: DE/PL +18%</div>
+        <div style="background:var(--green-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--green-t)"><i class="ti ti-trending-up" aria-hidden="true"></i> MY 840MW online Q3 2026</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ASSETS TAB -->
+  <div id="tab-assets" class="content">
+    <div class="asset-list">
+      <div class="al-header">
+        <input class="al-search" placeholder="Search assets…" oninput="searchAssets(this.value)">
+        <select class="al-sort" onchange="sortAssets(this.value)">
+          <option value="irr">IRR ↓</option>
+          <option value="score">Score ↓</option>
+          <option value="mw">MW ↓</option>
+          <option value="ev">EV/MW ↓</option>
+        </select>
+      </div>
+      <div id="asset-list-body"></div>
+    </div>
+    <div id="detail-pane" class="detail">
+      <div class="dno">
+        <i class="ti ti-building-skyscraper" style="font-size:32px;opacity:.3" aria-hidden="true"></i>
+        <div style="font-size:13px">Select an asset to open the investment view</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARE TAB -->
+  <div id="tab-compare" class="compare-wrap" style="display:none">
+    <div style="font-size:15px;font-weight:500;color:var(--t1)">Multi-asset comparison</div>
+    <div style="font-size:12px;color:var(--t2);margin-top:3px;margin-bottom:12px">Select up to 5 assets to compare side-by-side</div>
+    <div class="compare-grid" id="compare-cards"></div>
+    <div id="compare-table-area"></div>
+  </div>
+
+  <!-- SPV TAB -->
+  <div id="tab-spv" style="display:none;flex:1;overflow-y:auto;padding:16px;background:var(--bg3)">
+    <div style="max-width:680px;margin:0 auto">
+      <div style="font-size:15px;font-weight:500;color:var(--t1)">SPV monitor</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;margin-bottom:14px">Off-balance-sheet debt entities — ranked by refinancing urgency</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+        <div class="sc" style="border-left:3px solid var(--red)"><div class="sv" style="color:var(--red-t)">3</div><div class="sl">Critical</div></div>
+        <div class="sc" style="border-left:3px solid var(--amber)"><div class="sv" style="color:var(--amber-t)">12</div><div class="sl">High risk</div></div>
+        <div class="sc"><div class="sv">128</div><div class="sl">Monitoring</div></div>
+      </div>
+      <div id="spv-list"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ASSETS = [
+  {id:'ashburn',name:'Ashburn, Virginia',sub:'USA · Hyperscale cluster',region:'na',color:'#185FA5',
+   mw:840,occ:94,gpu:'H100, A100, GB200',op:'Equinix / QTS / DataBank',
+   elec_price:42,elec_avail:1200,elec_pipeline:400,pue:1.35,grid_risk:'Low',
+   irr_lo:19,irr_hi:23,irr:21,ebitda_mw:2.4,cash_yield:7.2,
+   ev_mw:14.8,ev_total:12432,capex_mw:5.9,rating:'A-',
+   capex:{land:8,power:28,build:48,network:16},
+   debt:4100,ltv:71,equity:1680,debt_rate:5.1,maturity:'2028',offtake:'AWS 60%, Azure 25%',
+   subsidies:'VA BPOL exemption, 10yr abatement',exit_cap:5.8,
+   score:81,score_power:26,score_conn:18,score_reg:13,score_cost:12,score_demand:12,
+   spv:true,spvname:'Ashburn Hyperscale SPV III',spv_risk:'stable',
+   status:'active'},
+  {id:'oregon',name:'Oregon, USA',sub:'USA · Cheap hydro',region:'na',color:'#185FA5',
+   mw:480,occ:96,gpu:'H100, TPU v5',op:'Amazon / Google',
+   elec_price:28,elec_avail:900,elec_pipeline:200,pue:1.30,grid_risk:'Very low',
+   irr_lo:21,irr_hi:25,irr:23,ebitda_mw:2.7,cash_yield:8.1,
+   ev_mw:16.2,ev_total:7776,capex_mw:5.5,rating:'AA-',
+   capex:{land:5,power:25,build:52,network:18},
+   debt:2800,ltv:61,equity:1792,debt_rate:4.8,maturity:'2029',offtake:'AWS 85%, Google 15%',
+   subsidies:'OR no sales tax, BPA hydro PPA',exit_cap:5.2,
+   score:87,score_power:29,score_conn:17,score_reg:14,score_cost:15,score_demand:12,
+   spv:false,status:'active'},
+  {id:'stockholm',name:'Stockholm, Sweden',sub:'Europe · Green hydro',region:'eu',color:'#1D9E75',
+   mw:180,occ:89,gpu:'H100, A100',op:'Hydro66 / DigiPlex',
+   elec_price:28,elec_avail:500,elec_pipeline:300,pue:1.25,grid_risk:'Low',
+   irr_lo:22,irr_hi:26,irr:24,ebitda_mw:2.8,cash_yield:8.4,
+   ev_mw:17.1,ev_total:3078,capex_mw:5.1,rating:'A+',
+   capex:{land:4,power:22,build:55,network:19},
+   debt:900,ltv:51,equity:864,debt_rate:4.3,maturity:'2030',offtake:'Meta 45%, Microsoft 30%',
+   subsidies:'SE hydro PPA €0.018/kWh, green cert',exit_cap:5.0,
+   score:85,score_power:28,score_conn:16,score_reg:15,score_cost:14,score_demand:12,
+   spv:false,status:'active'},
+  {id:'frankfurt',name:'Frankfurt, Germany',sub:'Europe · Financial hub',region:'eu',color:'#1D9E75',
+   mw:420,occ:82,gpu:'H100, A100',op:'e-shelter / Interxion / Iron Mountain',
+   elec_price:110,elec_avail:600,elec_pipeline:80,pue:1.42,grid_risk:'Medium-high',
+   irr_lo:11,irr_hi:15,irr:13,ebitda_mw:1.5,cash_yield:4.8,
+   ev_mw:9.2,ev_total:3864,capex_mw:9.8,rating:'BB',
+   capex:{land:14,power:35,build:38,network:13},
+   debt:3200,ltv:74,equity:1128,debt_rate:4.2,maturity:'2026-09',offtake:'Deutsche Telekom 40%, various',
+   subsidies:'None material — standard DE corp 15%',exit_cap:7.8,
+   score:54,score_power:11,score_conn:18,score_reg:10,score_cost:6,score_demand:9,
+   spv:true,spvname:'Hyperscale EMEA Infra SPV I',spv_risk:'critical',
+   status:'warning'},
+  {id:'singapore',name:'Singapore',sub:'APAC · Regional hub',region:'apac',color:'#D85A30',
+   mw:280,occ:91,gpu:'H100, H200',op:'ST Telemedia / Keppel',
+   elec_price:95,elec_avail:400,elec_pipeline:50,pue:1.50,grid_risk:'High — cap constrained',
+   irr_lo:17,irr_hi:21,irr:19,ebitda_mw:2.1,cash_yield:6.3,
+   ev_mw:12.8,ev_total:3584,capex_mw:9.1,rating:'A',
+   capex:{land:18,power:32,build:38,network:12},
+   debt:2400,ltv:71,equity:976,debt_rate:4.6,maturity:'2027-06',offtake:'Google 50%, AWS 30%',
+   subsidies:'SG Pioneer status 5% corp 10yr',exit_cap:6.5,
+   score:68,score_power:14,score_conn:19,score_reg:13,score_cost:9,score_demand:13,
+   spv:true,spvname:'APAC GPU Infrastructure SPV',spv_risk:'high',
+   status:'active'},
+  {id:'malaysia',name:'Johor Bahru, Malaysia',sub:'APAC · New build Q3 2026',region:'apac',color:'#D85A30',
+   mw:840,occ:0,gpu:'GB200 (planned)',op:'YTL + Microsoft JV',
+   elec_price:45,elec_avail:1500,elec_pipeline:2000,pue:1.35,grid_risk:'Low — dedicated line',
+   irr_lo:23,irr_hi:29,irr:26,ebitda_mw:3.1,cash_yield:0,
+   ev_mw:18.5,ev_total:15540,capex_mw:4.2,rating:'BB+',
+   capex:{land:6,power:26,build:54,network:14},
+   debt:2800,ltv:62,equity:1708,debt_rate:5.4,maturity:'2029',offtake:'Microsoft 100% (under construction)',
+   subsidies:'MY 0% corp 10yr Iskandar zone, grid subsidy',exit_cap:5.5,
+   score:79,score_power:25,score_conn:14,score_reg:14,score_cost:14,score_demand:12,
+   spv:true,spvname:'Malaysia AI Hub SPV',spv_risk:'high',
+   status:'construction'},
+  {id:'dubai',name:'Dubai, UAE',sub:'Middle East · Free zone',region:'mea',color:'#BA7517',
+   mw:120,occ:78,gpu:'H100, L40S',op:'Moro Hub / du',
+   elec_price:35,elec_avail:350,elec_pipeline:200,pue:1.55,grid_risk:'Low',
+   irr_lo:19,irr_hi:25,irr:22,ebitda_mw:2.6,cash_yield:7.8,
+   ev_mw:15.4,ev_total:1848,capex_mw:7.1,rating:'A-',
+   capex:{land:10,power:30,build:46,network:14},
+   debt:600,ltv:48,equity:648,debt_rate:5.0,maturity:'2028',offtake:'Microsoft 35%, various',
+   subsidies:'UAE Free Zone 0% corp, subsidised water',exit_cap:6.0,
+   score:74,score_power:22,score_conn:16,score_reg:14,score_cost:12,score_demand:10,
+   spv:false,status:'active'},
+  {id:'tokyo',name:'Tokyo, Japan',sub:'APAC · Premium market',region:'apac',color:'#D85A30',
+   mw:200,occ:93,gpu:'H100, H200',op:'NTT / Equinix / IIJ',
+   elec_price:158,elec_avail:300,elec_pipeline:60,pue:1.45,grid_risk:'Medium',
+   irr_lo:13,irr_hi:17,irr:15,ebitda_mw:2.0,cash_yield:5.2,
+   ev_mw:10.8,ev_total:2160,capex_mw:11.2,rating:'A',
+   capex:{land:22,power:28,build:38,network:12},
+   debt:1100,ltv:57,equity:832,debt_rate:2.1,maturity:'2028',offtake:'SoftBank 40%, AWS 30%',
+   subsidies:'JP green DC incentive — JPY subsidy on PUE',exit_cap:6.8,
+   score:64,score_power:13,score_conn:18,score_reg:12,score_cost:8,score_demand:13,
+   spv:false,status:'active'},
+  {id:'riyadh',name:'Riyadh, Saudi Arabia',sub:'Middle East · Vision 2030',region:'mea',color:'#BA7517',
+   mw:90,occ:72,gpu:'H100',op:'Saudi Aramco JV / STC',
+   elec_price:18,elec_avail:800,elec_pipeline:1200,pue:1.65,grid_risk:'Very low',
+   irr_lo:22,irr_hi:28,irr:25,ebitda_mw:2.9,cash_yield:8.7,
+   ev_mw:16.8,ev_total:1512,capex_mw:6.0,rating:'BBB',
+   capex:{land:5,power:28,build:50,network:17},
+   debt:350,ltv:42,equity:484,debt_rate:4.9,maturity:'2029',offtake:'Saudi Aramco 60%',
+   subsidies:'SA Vision 2030 incentive, subsidised power',exit_cap:5.8,
+   score:72,score_power:24,score_conn:13,score_reg:12,score_cost:14,score_demand:9,
+   spv:false,status:'active'},
+];
+
+const SPV_LIST = [
+  {name:'Hyperscale EMEA Infra SPV I',sponsors:'Microsoft + Blackrock',sites:'Frankfurt, Dublin, Amsterdam',
+   debt:3200,ltv:74,maturity:'Sept 2026',rate_fixed:4.2,rate_float:6.8,dscr:1.41,risk:'critical',
+   alert:'Refinancing required within 90 days. Fixed 4.2% → floating 6.8%+. Est. $96–128M additional annual interest. LTV breach risk if asset values fall 5%.'},
+  {name:'APAC GPU Infrastructure SPV',sponsors:'SoftBank + GIC',sites:'Singapore, Tokyo, Seoul',
+   debt:2400,ltv:71,maturity:'Jun 2027',rate_fixed:4.6,rate_float:6.4,dscr:1.58,risk:'high',
+   alert:'LTV above 70% threshold. Singapore grid cap constrains expansion. Floating rate refinancing in 12 months.'},
+  {name:'AI Compute Infrastructure Trust II',sponsors:'Google + KKR',sites:'Virginia, Texas, Ohio',
+   debt:5100,ltv:68,maturity:'Mar 2027',rate_fixed:4.4,rate_float:6.2,dscr:1.72,risk:'high',alert:''},
+  {name:'Malaysia AI Hub SPV',sponsors:'YTL + Microsoft',sites:'Johor Bahru',
+   debt:2800,ltv:62,maturity:'Q3 2026 (completion)',rate_fixed:5.4,rate_float:7.0,dscr:0,risk:'high',
+   alert:'Construction phase — no DSCR yet. Completion risk. Single offtake (Microsoft).'},
+  {name:'Nordic Green DC SPV',sponsors:'Equinix + EQT',sites:'Stockholm, Helsinki, Oslo',
+   debt:820,ltv:51,maturity:'Dec 2027',rate_fixed:4.3,rate_float:5.9,dscr:2.15,risk:'stable',alert:''},
+  {name:'Ashburn Hyperscale SPV III',sponsors:'Equinix + Brookfield',sites:'Northern Virginia',
+   debt:4100,ltv:61,maturity:'2028',rate_fixed:5.1,rate_float:6.6,dscr:2.38,risk:'stable',alert:''},
+];
+
+let currentRegion='all', selectedId=null, compareSet=new Set(), sortKey='irr';
+
+function scoreColor(s){return s>=75?'#1D9E75':s>=55?'#185FA5':'#E24B4A'}
+function irrColor(v){return v>=22?'#1D9E75':v>=16?'#185FA5':'#BA7517'}
+function riskColor(r){return r==='critical'?'#E24B4A':r==='high'?'#BA7517':'#1D9E75'}
+function riskBg(r){return r==='critical'?'#FCEBEB':r==='high'?'#FAEEDA':'#EAF3DE'}
+function riskT(r){return r==='critical'?'#A32D2D':r==='high'?'#854F0B':'#3B6D11'}
+function statusLabel(s){return s==='warning'?'SPV alert':s==='construction'?'Under construction':'Operational'}
+function statusCol(s){return s==='warning'?'#A32D2D':s==='construction'?'#854F0B':'#3B6D11'}
+function statusBg(s){return s==='warning'?'#FCEBEB':s==='construction'?'#FAEEDA':'#EAF3DE'}
+
+function filteredAssets(){
+  let a=[...ASSETS];
+  if(currentRegion!=='all') a=a.filter(x=>x.region===currentRegion);
+  if(window._search) a=a.filter(x=>x.name.toLowerCase().includes(window._search)||x.sub.toLowerCase().includes(window._search));
+  a.sort((x,y)=>{
+    if(sortKey==='irr') return y.irr-x.irr;
+    if(sortKey==='score') return y.score-x.score;
+    if(sortKey==='mw') return y.mw-x.mw;
+    if(sortKey==='ev') return y.ev_mw-x.ev_mw;
+    return 0;
+  });
+  return a;
+}
+
+function renderAssetList(){
+  const el=document.getElementById('asset-list-body');
+  const assets=filteredAssets();
+  el.innerHTML=assets.map(a=>`
+    <div class="asset-row${a.id===selectedId?' sel':''}" onclick="openAsset('${a.id}')">
+      <div class="ar-top">
+        <div>
+          <div class="ar-name">${a.name}</div>
+          <div class="ar-sub">${a.sub}</div>
+        </div>
+        <span class="score-pill" style="background:${scoreColor(a.score)}22;color:${scoreColor(a.score)}">${a.score}</span>
+      </div>
+      <div class="ar-metrics">
+        <div class="arm">IRR <span style="color:${irrColor(a.irr)}">${a.irr}%</span></div>
+        <div class="arm">EV/MW <span>$${a.ev_mw}M</span></div>
+        <div class="arm">Yield <span>${a.cash_yield}%</span></div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:3px">
+        ${a.spv?`<span class="spv-tag">SPV</span>`:''}
+        ${a.status==='warning'?`<span class="warn-tag"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Refi risk</span>`:''}
+        ${a.status==='construction'?`<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:var(--amber-bg);color:var(--amber-t);font-weight:500">Building</span>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAsset(id){
+  selectedId=id;
+  renderAssetList();
+  const a=ASSETS.find(x=>x.id===id);
+  renderDetail(a);
+}
+
+let scenChart=null;
+function renderDetail(a){
+  const pane=document.getElementById('detail-pane');
+  const irrW=Math.min(100,(a.irr/30)*100).toFixed(0);
+  const capexTotal=a.capex.land+a.capex.power+a.capex.build+a.capex.network;
+
+  pane.innerHTML=`
+  <div style="display:flex;flex-direction:column;height:100%">
+  <div class="inv-header">
+    <div>
+      <div class="inv-title">${a.name}</div>
+      <div class="inv-sub">${a.sub} · ${a.mw} MW · Rating: ${a.rating}</div>
+    </div>
+    <div class="inv-actions">
+      <span class="score-pill" style="background:${statusBg(a.status)};color:${statusCol(a.status)};font-size:11px;padding:4px 9px;border-radius:999px;font-weight:500">${statusLabel(a.status)}</span>
+      <button class="btn-sm" onclick="sendPrompt('Give me a full investment memo for ${a.name} — ${a.mw}MW, IRR ${a.irr}%, $${a.ev_mw}M EV/MW, ${a.spv?a.spvname+' SPV':'no SPV structure'}. Include debt sizing, exit assumptions and key risks.')"><i class="ti ti-file-analytics" aria-hidden="true"></i> Full memo ↗</button>
+    </div>
+  </div>
+  <div class="inv-body" style="flex:1;overflow-y:auto">
+
+    <!-- VALUATION -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-chart-pie-2" aria-hidden="true"></i> Valuation</div></div>
+      <div class="sec-body">
+        <div class="val-grid">
+          <div class="val-card" style="border:1.5px solid ${irrColor(a.irr)}44">
+            <div class="val-v" style="color:${irrColor(a.irr)}">${a.irr_lo}–${a.irr_hi}%</div>
+            <div class="val-l">IRR range</div>
+            <div class="val-d">Base case ${a.irr}%</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v">$${a.ev_mw}M</div>
+            <div class="val-l">EV / MW</div>
+            <div class="val-d">$${(a.ev_total/1000).toFixed(1)}B total EV</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v">${a.cash_yield}%</div>
+            <div class="val-l">Cash yield (stab.)</div>
+            <div class="val-d">EBITDA $${a.ebitda_mw}M/MW</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v" style="color:${scoreColor(a.score)}">${a.score}/100</div>
+            <div class="val-l">Composite score</div>
+            <div class="val-d">Risk-adj. quality</div>
+          </div>
+        </div>
+        <div class="irr-bar-wrap" style="margin-top:12px">
+          <div class="irr-row"><span style="color:var(--t2)">IRR confidence band</span><span style="font-weight:500;color:${irrColor(a.irr)}">${a.irr_lo}% → ${a.irr_hi}%</span></div>
+          <div class="irr-bg"><div class="irr-fill" style="width:${irrW}%;background:${irrColor(a.irr)}"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SITE SCORE -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-award" aria-hidden="true"></i> Site scoring (0–100)</div></div>
+      <div class="sec-body">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="score-ring">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="30" fill="none" stroke="var(--color-border-tertiary)" stroke-width="6"/>
+              <circle cx="36" cy="36" r="30" fill="none" stroke="${scoreColor(a.score)}" stroke-width="6" stroke-dasharray="${(a.score/100)*188.5} 188.5" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+            </svg>
+            <div class="score-num" style="color:${scoreColor(a.score)}">${a.score}</div>
+          </div>
+          <div class="score-breakdown">
+            ${[
+              ['Power availability',a.score_power,30],
+              ['Demand proximity',a.score_demand,20],
+              ['Connectivity',a.score_conn,20],
+              ['Regulation / tax',a.score_reg,15],
+              ['Cost base',a.score_cost,15],
+            ].map(([l,v,max])=>`<div class="sb-row"><div class="sb-label">${l}</div><div class="sb-bar-w"><div class="sb-bar" style="width:${(v/max)*100}%"></div></div><div class="sb-val">${v}/${max}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENERGY FINGERPRINT -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-bolt" aria-hidden="true"></i> Energy fingerprint</div></div>
+      <div class="sec-body">
+        <div class="energy-grid">
+          <div class="e-card">
+            <div class="e-v">${a.elec_avail} MW</div>
+            <div class="e-l">Available now</div>
+            <div class="e-status" style="background:${a.elec_avail>500?'#EAF3DE':'#FAEEDA'};color:${a.elec_avail>500?'#3B6D11':'#854F0B'}">${a.elec_avail>500?'Unconstrained':'Constrained'}</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">${a.elec_pipeline} MW</div>
+            <div class="e-l">In pipeline</div>
+            <div class="e-status" style="background:var(--blue-bg);color:var(--blue-t)">Permitted</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">$${a.elec_price}/MWh</div>
+            <div class="e-l">Power cost</div>
+            <div class="e-status" style="background:${a.elec_price<50?'#EAF3DE':a.elec_price<90?'#FAEEDA':'#FCEBEB'};color:${a.elec_price<50?'#3B6D11':a.elec_price<90?'#854F0B':'#A32D2D'}">${a.elec_price<50?'Competitive':a.elec_price<90?'Mid-range':'Expensive'}</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">PUE ${a.pue}</div>
+            <div class="e-l">Efficiency</div>
+            <div class="e-status" style="background:${a.pue<1.35?'#EAF3DE':a.pue<1.5?'#FAEEDA':'#FCEBEB'};color:${a.pue<1.35?'#3B6D11':a.pue<1.5?'#854F0B':'#A32D2D'}">${a.pue<1.35?'Efficient':a.pue<1.5?'Average':'Inefficient'}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="mrow"><span class="mk">Grid congestion risk</span><span class="mv">${a.grid_risk}</span></div>
+          <div class="mrow"><span class="mk">Annual energy draw</span><span class="mv">${(a.mw*a.pue*8.76/1000).toFixed(2)} TWh</span></div>
+          <div class="mrow"><span class="mk">Annual energy cost</span><span class="mv">$${Math.round(a.mw*a.pue*8760*a.elec_price/1e6)}M</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPV / CAPEX STACK -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-building-bank" aria-hidden="true"></i> Capital structure &amp; SPV</div></div>
+      <div class="sec-body">
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:500;color:var(--t2);margin-bottom:8px">Capex stack — % of total</div>
+          ${[['Land / site',a.capex.land,'#888780'],['Power infra',a.capex.power,'#185FA5'],['Build / civil',a.capex.build,'#1D9E75'],['Network / fiber',a.capex.network,'#D85A30']].map(([l,v,c])=>`
+          <div class="capex-row">
+            <div class="capex-label">${l}</div>
+            <div class="capex-bar-w"><div class="capex-bar" style="width:${v}%;background:${c}"></div></div>
+            <div class="capex-val">${v}%</div>
+          </div>`).join('')}
+          <div class="mrow" style="margin-top:8px"><span class="mk">Total CAPEX/MW</span><span class="mv">$${a.capex_mw}M</span></div>
+        </div>
+        ${a.spv?`
+        <div style="background:${a.spv_risk==='critical'?'#FCEBEB':a.spv_risk==='high'?'#FAEEDA':'var(--bg2)'};border-radius:var(--r);padding:10px;border:0.5px solid ${a.spv_risk==='critical'?'#F7C1C1':a.spv_risk==='high'?'#FAC775':'var(--bdr)'}">
+          <div style="font-size:11px;font-weight:500;color:${riskT(a.spv_risk)};margin-bottom:6px"><i class="ti ti-building-bank" aria-hidden="true"></i> ${a.spvname}</div>
+          <div class="mrow"><span class="mk">Total debt</span><span class="mv">$${(a.debt/1000).toFixed(1)}B</span></div>
+          <div class="mrow"><span class="mk">LTV</span><span class="mv" style="color:${a.ltv>70?'#A32D2D':a.ltv>60?'#854F0B':'#3B6D11'}">${a.ltv}%</span></div>
+          <div class="mrow"><span class="mk">Interest rate</span><span class="mv">${a.debt_rate}% fixed</span></div>
+          <div class="mrow"><span class="mk">Maturity</span><span class="mv">${a.maturity}</span></div>
+          <div class="mrow"><span class="mk">Offtake contracts</span><span class="mv">${a.offtake}</span></div>
+        </div>`:`
+        <div class="mrow"><span class="mk">Structure</span><span class="mv">Direct balance sheet</span></div>
+        <div class="mrow"><span class="mk">Debt</span><span class="mv">$${(a.debt/1000).toFixed(1)}B</span></div>
+        <div class="mrow"><span class="mk">LTV</span><span class="mv">${a.ltv}%</span></div>
+        <div class="mrow"><span class="mk">Offtake</span><span class="mv">${a.offtake}</span></div>`}
+        <div class="mrow" style="margin-top:6px"><span class="mk">Subsidies / incentives</span><span class="mv">${a.subsidies}</span></div>
+        <div class="mrow"><span class="mk">Exit cap rate assumption</span><span class="mv">${a.exit_cap}%</span></div>
+      </div>
+    </div>
+
+    <!-- SCENARIO ENGINE -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Scenario stress engine</div></div>
+      <div class="sec-body">
+        <div class="scenario-wrap" id="scen-${a.id}">
+          <div class="sc-slider-row"><div class="sc-label">Energy price shock (%)</div><input type="range" class="sc-range" min="-30" max="60" value="0" step="5" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ep-${a.id}">0%</div></div>
+          <div class="sc-slider-row"><div class="sc-label">Occupancy delay (months)</div><input type="range" class="sc-range" min="0" max="24" value="0" step="3" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-od-${a.id}">0mo</div></div>
+          <div class="sc-slider-row"><div class="sc-label">CAPEX inflation (%)</div><input type="range" class="sc-range" min="0" max="40" value="0" step="5" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ci-${a.id}">0%</div></div>
+          <div class="sc-slider-row"><div class="sc-label">Interest rate shift (bps)</div><input type="range" class="sc-range" min="-100" max="400" value="0" step="25" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ir-${a.id}">0</div></div>
+          <div class="sc-results" id="sc-results-${a.id}">
+            <div class="sc-res"><div class="sc-rv" id="sc-irr-${a.id}" style="color:${irrColor(a.irr)}">${a.irr}%</div><div class="sc-rl">Stressed IRR</div><div class="sc-delta" id="sc-irrd-${a.id}" style="color:var(--t3)">Base</div></div>
+            <div class="sc-res"><div class="sc-rv" id="sc-dscr-${a.id}">—</div><div class="sc-rl">DSCR</div><div class="sc-delta" id="sc-dscrd-${a.id}" style="color:var(--t3)">—</div></div>
+            <div class="sc-res"><div class="sc-rv" id="sc-ev-${a.id}">$${a.ev_mw}M</div><div class="sc-rl">EV/MW</div><div class="sc-delta" id="sc-evd-${a.id}" style="color:var(--t3)">Base</div></div>
+          </div>
+        </div>
+        <button class="btn-sm primary" style="width:100%;justify-content:center;margin-top:10px" onclick="sendPrompt('Run a stress test for ${a.name}: energy +20%, capex +15%, interest rates +300bps, 6 month occupancy delay. What happens to the SPV DSCR and is there equity impairment?')"><i class="ti ti-report-analytics" aria-hidden="true"></i> Deep scenario analysis ↗</button>
+      </div>
+    </div>
+
+  </div></div>`;
+
+  runScenario(a.id);
+}
+
+function runScenario(id){
+  const a=ASSETS.find(x=>x.id===id);
+  const wrap=document.getElementById('scen-'+id);
+  if(!wrap) return;
+  const sliders=wrap.querySelectorAll('input[type=range]');
+  const ep=+sliders[0].value, od=+sliders[1].value, ci=+sliders[2].value, ir=+sliders[3].value;
+  document.getElementById('sc-ep-'+id).textContent=(ep>0?'+':'')+ep+'%';
+  document.getElementById('sc-od-'+id).textContent=od+'mo';
+  document.getElementById('sc-ci-'+id).textContent=(ci>0?'+':'')+ci+'%';
+  document.getElementById('sc-ir-'+id).textContent=(ir>0?'+':'')+ir+'bps';
+
+  const energyImpact=(ep/100)*a.mw*a.pue*8760*a.elec_price/1e6;
+  const capexImpact=(ci/100)*a.capex_mw*a.mw/1e3;
+  const occPenalty=od*0.5;
+  const interestImpact=(ir/10000)*a.debt/1e3;
+  const irrStressed=Math.max(2, a.irr - (ep/100)*6 - od*0.25 - (ci/100)*2 - (ir/100)*0.15).toFixed(1);
+  const irrDelta=(irrStressed-a.irr).toFixed(1);
+
+  const annualEBITDA=a.ebitda_mw*a.mw;
+  const annualDebt=(a.debt/1000)*(a.debt_rate/100);
+  const dscrBase=annualEBITDA/annualDebt;
+  const dscrStressed=Math.max(0.5,(annualEBITDA-energyImpact-occPenalty*a.ebitda_mw)/(annualDebt+interestImpact)).toFixed(2);
+  const dscrDelta=(dscrStressed-dscrBase).toFixed(2);
+
+  const evStressed=Math.max(3,(a.ev_mw*(1-(ci/100)*0.3-(ep/100)*0.2-(ir/10000)*2))).toFixed(1);
+  const evDelta=(evStressed-a.ev_mw).toFixed(1);
+
+  const irrEl=document.getElementById('sc-irr-'+id);
+  irrEl.textContent=irrStressed+'%';
+  irrEl.style.color=irrColor(Math.round(+irrStressed));
+  document.getElementById('sc-irrd-'+id).textContent=(irrDelta>0?'+':'')+irrDelta+'% vs base';
+  document.getElementById('sc-irrd-'+id).style.color=irrDelta<0?'#E24B4A':'#1D9E75';
+
+  const dscrEl=document.getElementById('sc-dscr-'+id);
+  dscrEl.textContent=dscrStressed+'x';
+  dscrEl.style.color=+dscrStressed<1.2?'#E24B4A':+dscrStressed<1.5?'#BA7517':'#1D9E75';
+  document.getElementById('sc-dscrd-'+id).textContent=(dscrDelta>0?'+':'')+dscrDelta+' vs base';
+  document.getElementById('sc-dscrd-'+id).style.color=+dscrDelta<0?'#E24B4A':'#1D9E75';
+
+  document.getElementById('sc-ev-'+id).textContent='$'+evStressed+'M';
+  document.getElementById('sc-evd-'+id).textContent=(evDelta>0?'+$':'$')+evDelta+'M vs base';
+  document.getElementById('sc-evd-'+id).style.color=+evDelta<0?'#E24B4A':'#1D9E75';
+}
+
+function filterR(r,el){
+  currentRegion=r;
+  document.querySelectorAll('.fi').forEach(f=>f.classList.remove('on'));
+  el.classList.add('on');
+  renderAssetList();
+}
+function searchAssets(v){window._search=v.toLowerCase();renderAssetList();}
+function sortAssets(v){sortKey=v;renderAssetList();}
+
+function goTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-assets').style.display=tab==='assets'?'flex':'none';
+  document.getElementById('tab-compare').style.display=tab==='compare'?'block':'none';
+  document.getElementById('tab-spv').style.display=tab==='spv'?'block':'none';
+  if(tab==='compare') renderCompare();
+  if(tab==='spv') renderSPV();
+}
+
+function renderCompare(){
+  const el=document.getElementById('compare-cards');
+  el.innerHTML=ASSETS.map(a=>`
+    <div class="cmp-card${compareSet.has(a.id)?' selected':''}" onclick="toggleCompare('${a.id}',this)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div class="cmp-name">${a.name}</div>
+        <span style="font-size:10px;font-weight:500;padding:2px 6px;border-radius:999px;background:${scoreColor(a.score)}22;color:${scoreColor(a.score)}">${a.score}</span>
+      </div>
+      <div class="cmp-metrics">
+        <div class="cmp-m"><span class="cmp-mk">IRR</span><span class="cmp-mv" style="color:${irrColor(a.irr)}">${a.irr}%</span></div>
+        <div class="cmp-m"><span class="cmp-mk">EV/MW</span><span class="cmp-mv">$${a.ev_mw}M</span></div>
+        <div class="cmp-m"><span class="cmp-mk">Power</span><span class="cmp-mv">$${a.elec_price}/MWh</span></div>
+        <div class="cmp-m"><span class="cmp-mk">Cash yield</span><span class="cmp-mv">${a.cash_yield}%</span></div>
+        <div class="cmp-m"><span class="cmp-mk">LTV</span><span class="cmp-mv">${a.ltv}%</span></div>
+      </div>
+      <div class="cmp-score-bar" style="background:${scoreColor(a.score)};width:${a.score}%"></div>
+    </div>`).join('');
+  renderCompareTable();
+}
+
+function toggleCompare(id){
+  if(compareSet.has(id)) compareSet.delete(id);
+  else if(compareSet.size<5) compareSet.add(id);
+  renderCompare();
+}
+
+function renderCompareTable(){
+  const el=document.getElementById('compare-table-area');
+  const sel=ASSETS.filter(a=>compareSet.has(a.id));
+  if(sel.length<2){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">Select 2–5 assets to compare</div>';return;}
+  const metrics=[
+    ['IRR (%)',a=>a.irr,'irr',false],
+    ['EV / MW ($M)',a=>a.ev_mw,'ev_mw',false],
+    ['Cash yield (%)',a=>a.cash_yield,'cash_yield',false],
+    ['Power cost ($/MWh)',a=>a.elec_price,'elec_price',true],
+    ['CAPEX / MW ($M)',a=>a.capex_mw,'capex_mw',true],
+    ['PUE',a=>a.pue,'pue',true],
+    ['LTV (%)',a=>a.ltv,'ltv',true],
+    ['Site score',a=>a.score,'score',false],
+    ['Capacity (MW)',a=>a.mw,'mw',false],
+    ['Occupancy (%)',a=>a.occ,'occ',false],
+  ];
+  el.innerHTML=`<div class="compare-table-wrap"><table class="cmp-table">
+    <thead><tr><th>Metric</th>${sel.map(a=>`<th>${a.name.split(',')[0]}</th>`).join('')}</tr></thead>
+    <tbody>${metrics.map(([label,fn,key,lowerBetter])=>{
+      const vals=sel.map(fn);
+      const best=lowerBetter?Math.min(...vals):Math.max(...vals);
+      const worst=lowerBetter?Math.max(...vals):Math.min(...vals);
+      return `<tr><td style="color:var(--t2)">${label}</td>${sel.map(a=>{
+        const v=fn(a);
+        const cls=v===best?'best':v===worst&&vals.length>2?'worst':'';
+        return `<td class="${cls}">${v}</td>`;
+      }).join('')}</tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderSPV(){
+  const el=document.getElementById('spv-list');
+  el.innerHTML=SPV_LIST.map(s=>`
+    <div style="background:var(--bg);border:0.5px solid ${s.risk==='critical'?'#F7C1C1':s.risk==='high'?'#FAC775':'var(--bdr)'};border-radius:var(--rl);padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--t1)">${s.name}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:2px">${s.sponsors} · ${s.sites}</div>
+        </div>
+        <span style="font-size:10px;padding:3px 8px;border-radius:999px;background:${riskBg(s.risk)};color:${riskT(s.risk)};font-weight:600;flex-shrink:0">${s.risk.toUpperCase()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        <div class="sc"><div class="sv">$${(s.debt/1000).toFixed(1)}B</div><div class="sl">Debt</div></div>
+        <div class="sc"><div class="sv" style="color:${s.ltv>70?'#A32D2D':s.ltv>60?'#854F0B':'#3B6D11'}">${s.ltv}%</div><div class="sl">LTV</div></div>
+        <div class="sc"><div class="sv">${s.dscr>0?s.dscr+'x':'N/A'}</div><div class="sl">DSCR</div></div>
+        <div class="sc"><div class="sv">${s.maturity}</div><div class="sl">Maturity</div></div>
+      </div>
+      ${s.rate_fixed?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px">Fixed ${s.rate_fixed}% → Float ${s.rate_float}%+ on refinancing</div>`:''}
+      ${s.alert?`<div style="background:${riskBg(s.risk)};color:${riskT(s.risk)};border-radius:var(--r);padding:7px 9px;font-size:11px;display:flex;gap:6px"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>${s.alert}</span></div>`:''}
+    </div>`).join('');
+}
+
+renderAssetList();
+</script>
