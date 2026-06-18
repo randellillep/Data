@@ -1,755 +1,742 @@
-bash
 
-cat > /mnt/user-data/outputs/datacenteriq.html << 'HTMLEOF'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DataCenterIQ — Global Data Center Intelligence</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<h2 class="sr-only">DataCenterIQ v2 — Data center valuation, SPV intelligence, and scenario stress testing platform</h2>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #ffffff;
-    --bg2: #f7f8fa;
-    --bg3: #f0f2f5;
-    --text: #111218;
-    --text2: #555b6e;
-    --text3: #9099ab;
-    --border: rgba(0,0,0,0.08);
-    --border2: rgba(0,0,0,0.14);
-    --blue: #185FA5;
-    --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
-    --green: #1D9E75;
-    --green-bg: #EAF3DE;
-    --green-text: #3B6D11;
-    --red: #E24B4A;
-    --red-bg: #FCEBEB;
-    --red-text: #A32D2D;
-    --amber: #BA7517;
-    --amber-bg: #FAEEDA;
-    --amber-text: #854F0B;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
-  [data-theme="dark"] {
-    --bg: #13151a;
-    --bg2: #1c1f27;
-    --bg3: #22252f;
-    --text: #e8eaf0;
-    --text2: #9099ab;
-    --text3: #555b6e;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --blue-bg: #0c1e33;
-    --blue-text: #85B7EB;
-    --green-bg: #0d1f16;
-    --green-text: #5DCAA5;
-    --red-bg: #1f0d0d;
-    --red-text: #F09595;
-    --amber-bg: #1f1505;
-    --amber-text: #EF9F27;
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:var(--color-background-primary);
+  --bg2:var(--color-background-secondary);
+  --bg3:var(--color-background-tertiary);
+  --t1:var(--color-text-primary);
+  --t2:var(--color-text-secondary);
+  --t3:var(--color-text-tertiary);
+  --bdr:var(--color-border-tertiary);
+  --bdr2:var(--color-border-secondary);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-t:#0C447C;
+  --green:#1D9E75;--green-bg:#EAF3DE;--green-t:#3B6D11;
+  --red:#E24B4A;--red-bg:#FCEBEB;--red-t:#A32D2D;
+  --amber:#BA7517;--amber-bg:#FAEEDA;--amber-t:#854F0B;
+  --r:var(--border-radius-md);--rl:var(--border-radius-lg);
+}
+body{font-family:var(--font-sans);background:var(--bg3);color:var(--t1);font-size:13px}
 
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg3); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+.shell{display:flex;flex-direction:column;height:100vh;min-height:700px}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--bdr2);padding:0 16px;display:flex;align-items:center;gap:0;height:50px;flex-shrink:0}
+.logo{font-size:14px;font-weight:500;color:var(--t1);display:flex;align-items:center;gap:8px;margin-right:20px}
+.logo-sq{width:24px;height:24px;background:var(--blue);border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.tabs{display:flex;height:100%}
+.tab{padding:0 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--t2);border:none;background:none;border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover:not(.on){color:var(--t1)}
+.tr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:999px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* TOPBAR */
-  .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border2); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 52px; position: sticky; top: 0; z-index: 100; }
-  .logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--text); text-decoration: none; margin-right: 24px; flex-shrink: 0; }
-  .logo-mark { width: 28px; height: 28px; background: var(--blue); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-  .logo-mark i { color: white; font-size: 16px; }
-  .nav-tabs { display: flex; gap: 0; height: 100%; }
-  .nav-tab { padding: 0 16px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); border: none; background: none; border-bottom: 2px solid transparent; height: 100%; transition: color 0.15s, border-color 0.15s; display: flex; align-items: center; gap: 6px; }
-  .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
-  .nav-tab:hover:not(.active) { color: var(--text); }
-  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .live-badge { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--green-text); background: var(--green-bg); padding: 4px 10px; border-radius: 999px; }
-  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-  .theme-btn { background: none; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 6px 8px; cursor: pointer; color: var(--text2); font-size: 14px; }
-  .theme-btn:hover { background: var(--bg2); }
-  .count-label { font-size: 12px; color: var(--text3); }
+.body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--bg);border-right:0.5px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+.sb{padding:12px;border-bottom:0.5px solid var(--bdr)}
+.sbl{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.fi{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--t2)}
+.fi:hover{background:var(--bg2)}
+.fi.on{background:var(--blue-bg);color:var(--blue-t);font-weight:500}
+.fid{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.fic{margin-left:auto;font-size:10px;opacity:.5}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc{background:var(--bg2);border-radius:var(--r);padding:9px}
+.sv{font-size:16px;font-weight:500;color:var(--t1);line-height:1.1}
+.sl{font-size:10px;color:var(--t2);margin-top:2px}
 
-  /* LAYOUT */
-  .main { display: flex; height: calc(100vh - 52px); }
-  .sidebar { width: 240px; flex-shrink: 0; background: var(--bg); border-right: 0.5px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
-  .content { flex: 1; overflow: hidden; display: flex; position: relative; }
+.content{flex:1;overflow:hidden;display:flex}
 
-  /* SIDEBAR */
-  .sb-section { padding: 14px; border-bottom: 0.5px solid var(--border); }
-  .sb-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
-  .filter-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text2); transition: background 0.1s; user-select: none; }
-  .filter-item:hover { background: var(--bg2); }
-  .filter-item.active { background: var(--blue-bg); color: var(--blue-text); font-weight: 500; }
-  .filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .filter-count { margin-left: auto; font-size: 11px; opacity: 0.55; }
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-card { background: var(--bg2); border-radius: var(--radius); padding: 10px; }
-  .stat-val { font-size: 17px; font-weight: 600; color: var(--text); line-height: 1.1; }
-  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .alert-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
-  .alert-item:last-child { border: none; padding-bottom: 0; }
-  .alert-icon { width: 26px; height: 26px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
-  .alert-title { font-size: 12px; font-weight: 500; color: var(--text); }
-  .alert-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+/* ASSET LIST */
+.asset-list{width:300px;flex-shrink:0;background:var(--bg);border-right:0.5px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+.al-header{padding:10px 12px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.al-search{flex:1;background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);padding:5px 9px;font-size:12px;color:var(--t1);outline:none}
+.al-search::placeholder{color:var(--t3)}
+.al-sort{font-size:11px;color:var(--t2);background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);padding:5px 8px;cursor:pointer;outline:none;color:var(--t1)}
+.asset-row{padding:10px 12px;border-bottom:0.5px solid var(--bdr);cursor:pointer;transition:background .1s;display:flex;flex-direction:column;gap:4px}
+.asset-row:hover{background:var(--bg2)}
+.asset-row.sel{background:var(--blue-bg)}
+.ar-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.ar-name{font-size:12px;font-weight:500;color:var(--t1);line-height:1.3}
+.ar-sub{font-size:11px;color:var(--t2)}
+.score-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:999px;flex-shrink:0}
+.ar-metrics{display:flex;gap:10px;margin-top:2px}
+.arm{font-size:11px;color:var(--t2)}
+.arm span{font-weight:500;color:var(--t1)}
+.spv-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--blue-bg);color:var(--blue-t);font-weight:500}
+.warn-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--red-bg);color:var(--red-t);font-weight:500}
 
-  /* MAP */
-  .map-wrap { flex: 1; position: relative; overflow: hidden; background: #C8DDF0; }
-  [data-theme="dark"] .map-wrap { background: #0d1e2e; }
-  .map-svg { width: 100%; height: 100%; display: block; }
-  .land { fill: #dae8f5; stroke: #b8d0e8; stroke-width: 0.5; }
-  [data-theme="dark"] .land { fill: #1a2d3f; stroke: #243d52; }
-  .dc-marker { cursor: pointer; }
-  .dc-marker circle.pulse { opacity: 0; }
-  .dc-marker:hover circle.pulse { opacity: 0.2; r: 14; }
-  .map-tooltip { position: absolute; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); padding: 10px 13px; font-size: 12px; pointer-events: none; min-width: 180px; display: none; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-  .map-tooltip.show { display: block; }
-  .tt-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .tt-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
-  .tt-k { color: var(--text2); }
-  .tt-v { font-weight: 500; color: var(--text); }
-  .map-hint { position: absolute; bottom: 12px; right: 12px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 6px 10px; font-size: 11px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
-  .map-legend { position: absolute; bottom: 12px; left: 12px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 11px; }
-  .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; color: var(--text2); }
-  .legend-row:last-child { margin: 0; }
+/* DETAIL / VALUATION */
+.detail{flex:1;overflow-y:auto;background:var(--bg3)}
+.dno{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--t3);background:var(--bg3)}
 
-  /* DETAIL PANEL */
-  .detail-panel { width: 0; flex-shrink: 0; background: var(--bg); border-left: 0.5px solid var(--border); overflow: hidden; transition: width 0.2s ease; display: flex; flex-direction: column; }
-  .detail-panel.open { width: 300px; overflow-y: auto; }
-  .panel-header { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; position: sticky; top: 0; background: var(--bg); z-index: 5; }
-  .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .panel-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .panel-close { background: none; border: none; cursor: pointer; color: var(--text3); padding: 2px; font-size: 16px; line-height: 1; }
-  .panel-close:hover { color: var(--text); }
-  .panel-body { padding: 14px 16px; flex: 1; }
-  .section-title { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin: 16px 0 8px; }
-  .section-title:first-child { margin-top: 0; }
-  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
-  .metric-row:last-child { border: none; }
-  .metric-k { color: var(--text2); display: flex; align-items: center; gap: 5px; }
-  .metric-v { font-weight: 500; color: var(--text); text-align: right; max-width: 55%; font-size: 11px; }
-  .irr-bar-wrap { margin: 8px 0 12px; }
-  .irr-bar-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .irr-bar-bg { background: var(--bg3); border-radius: 999px; height: 6px; }
-  .irr-bar { height: 6px; border-radius: 999px; transition: width 0.4s; }
-  .spv-box { border-radius: var(--radius); padding: 10px; margin: 6px 0; border: 0.5px solid var(--border); }
-  .spv-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .status-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; border-radius: 999px; font-weight: 500; margin-bottom: 10px; }
-  .panel-cta { display: block; width: 100%; padding: 9px; margin-top: 16px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--blue); text-align: center; transition: background 0.1s; }
-  .panel-cta:hover { background: var(--blue-bg); }
+.inv-header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0;position:sticky;top:0;z-index:5}
+.inv-title{font-size:15px;font-weight:500;color:var(--t1)}
+.inv-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.inv-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-sm{font-size:11px;padding:5px 10px;border-radius:var(--r);border:0.5px solid var(--bdr2);background:none;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:4px}
+.btn-sm:hover{background:var(--bg2);color:var(--t1)}
+.btn-sm.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-sm.primary:hover{opacity:.9}
 
-  /* ECONOMICS */
-  .eco-wrap { flex: 1; overflow-y: auto; padding: 24px; }
-  .eco-inner { max-width: 640px; margin: 0 auto; }
-  .eco-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .eco-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
-  .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .param-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: flex; justify-content: space-between; }
-  .param-label span { font-weight: 600; color: var(--text); }
-  input[type=range] { width: 100%; accent-color: var(--blue); cursor: pointer; }
-  .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
-  .result-card { background: var(--bg2); border-radius: var(--radius); padding: 12px; }
-  .result-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
-  .result-lbl { font-size: 11px; color: var(--text2); margin-top: 3px; }
-  .chart-wrap { position: relative; height: 200px; margin-bottom: 8px; }
-  .chart-label { font-size: 11px; color: var(--text3); }
-  .geo-compare { margin-top: 24px; border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-  .geo-compare-header { padding: 12px 14px; background: var(--bg2); border-bottom: 0.5px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
-  .geo-row { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 0.5px solid var(--border); font-size: 12px; }
-  .geo-row:last-child { border: none; }
-  .geo-name { width: 120px; color: var(--text); font-weight: 500; flex-shrink: 0; }
-  .geo-bar-wrap { flex: 1; }
-  .geo-bar-bg { background: var(--bg3); border-radius: 999px; height: 5px; }
-  .geo-bar-fill { height: 5px; border-radius: 999px; }
-  .geo-irr { width: 36px; text-align: right; font-weight: 600; color: var(--text); }
-  .geo-elec { width: 70px; text-align: right; color: var(--text2); font-size: 11px; }
+.inv-body{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 
-  /* SPV */
-  .spv-wrap { flex: 1; overflow-y: auto; padding: 24px; }
-  .spv-inner { max-width: 640px; margin: 0 auto; }
-  .spv-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
-  .spv-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 12px; }
-  .spv-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-  .spv-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .spv-card-detail { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .risk-pill { font-size: 10px; padding: 3px 8px; border-radius: 999px; font-weight: 600; flex-shrink: 0; }
-  .risk-critical { background: var(--red-bg); color: var(--red-text); }
-  .risk-high { background: var(--amber-bg); color: var(--amber-text); }
-  .risk-stable { background: var(--green-bg); color: var(--green-text); }
-  .spv-alert { background: var(--red-bg); color: var(--red-text); border-radius: var(--radius); padding: 7px 10px; font-size: 11px; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-  .spv-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-  .spv-metric { background: var(--bg2); border-radius: var(--radius); padding: 8px; }
-  .spv-metric-val { font-size: 15px; font-weight: 600; color: var(--text); }
-  .spv-metric-lbl { font-size: 10px; color: var(--text2); margin-top: 1px; }
-  .spv-cta { display: block; width: 100%; padding: 8px; margin-top: 10px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: none; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--blue); text-align: center; }
-  .spv-cta:hover { background: var(--blue-bg); }
+.section{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bdr);overflow:hidden}
+.sec-head{padding:10px 14px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.sec-title{font-size:11px;font-weight:500;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:6px}
+.sec-body{padding:12px 14px}
 
-  /* FOOTER */
-  .footer { padding: 8px 20px; background: var(--bg); border-top: 0.5px solid var(--border); font-size: 11px; color: var(--text3); display: flex; gap: 12px; justify-content: space-between; flex-shrink: 0; }
+.val-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.val-card{background:var(--bg2);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:2px}
+.val-v{font-size:18px;font-weight:500;color:var(--t1);line-height:1.1}
+.val-l{font-size:10px;color:var(--t2)}
+.val-d{font-size:10px;color:var(--t3);margin-top:3px}
 
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .param-grid { grid-template-columns: 1fr; }
-    .result-grid { grid-template-columns: 1fr 1fr; }
-    .spv-summary-grid { grid-template-columns: 1fr 1fr; }
-    .detail-panel.open { width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 10; }
-    .count-label { display: none; }
-    .logo { font-size: 14px; }
-  }
+.irr-bar-wrap{margin:6px 0}
+.irr-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.irr-bg{background:var(--bg2);border-radius:999px;height:5px}
+.irr-fill{height:5px;border-radius:999px}
+
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--bdr);font-size:12px}
+.mrow:last-child{border:none}
+.mk{color:var(--t2);display:flex;align-items:center;gap:5px}
+.mv{font-weight:500;color:var(--t1);text-align:right;max-width:60%}
+
+/* CAPEX STACK */
+.capex-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
+.capex-label{width:100px;color:var(--t2);flex-shrink:0}
+.capex-bar-w{flex:1;background:var(--bg2);border-radius:999px;height:6px}
+.capex-bar{height:6px;border-radius:999px}
+.capex-val{width:55px;text-align:right;font-weight:500;color:var(--t1)}
+
+/* ENERGY */
+.energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.e-card{background:var(--bg2);border-radius:var(--r);padding:9px}
+.e-v{font-size:15px;font-weight:500;color:var(--t1)}
+.e-l{font-size:10px;color:var(--t2);margin-top:1px}
+.e-status{font-size:10px;padding:2px 6px;border-radius:999px;margin-top:4px;display:inline-block;font-weight:500}
+
+/* SITE SCORE */
+.score-ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.score-ring svg{position:absolute;top:0;left:0}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:var(--t1)}
+.score-breakdown{flex:1;display:flex;flex-direction:column;gap:5px}
+.sb-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.sb-label{width:110px;color:var(--t2);flex-shrink:0}
+.sb-bar-w{flex:1;background:var(--bg2);border-radius:999px;height:4px}
+.sb-bar{height:4px;border-radius:999px;background:var(--blue)}
+.sb-val{width:28px;text-align:right;font-weight:500;color:var(--t1)}
+
+/* SCENARIO */
+.scenario-wrap{display:flex;flex-direction:column;gap:10px}
+.sc-slider-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.sc-label{width:170px;color:var(--t2);flex-shrink:0}
+.sc-range{flex:1;accent-color:var(--blue)}
+.sc-val{width:50px;text-align:right;font-weight:500;color:var(--t1)}
+.sc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.sc-res{background:var(--bg2);border-radius:var(--r);padding:9px}
+.sc-rv{font-size:15px;font-weight:500}
+.sc-rl{font-size:10px;color:var(--t2);margin-top:1px}
+.sc-delta{font-size:10px;margin-top:3px;font-weight:500}
+
+/* COMPARE */
+.compare-wrap{flex:1;overflow-y:auto;padding:16px;background:var(--bg3)}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.cmp-card{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);padding:12px;cursor:pointer;transition:border-color .15s}
+.cmp-card:hover{border-color:var(--bdr2)}
+.cmp-card.selected{border-color:var(--blue);border-width:1.5px}
+.cmp-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:6px}
+.cmp-metrics{display:flex;flex-direction:column;gap:4px}
+.cmp-m{display:flex;justify-content:space-between;font-size:11px}
+.cmp-mk{color:var(--t2)}
+.cmp-mv{font-weight:500;color:var(--t1)}
+.cmp-score-bar{height:3px;border-radius:999px;margin-top:8px}
+.compare-table-wrap{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);overflow:hidden;margin-top:12px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:11px}
+.cmp-table th{padding:8px 10px;background:var(--bg2);color:var(--t2);text-align:left;font-weight:500;border-bottom:0.5px solid var(--bdr)}
+.cmp-table td{padding:7px 10px;border-bottom:0.5px solid var(--bdr);color:var(--t1)}
+.cmp-table tr:last-child td{border:none}
+.cmp-table td.best{color:var(--green-t);font-weight:500}
+.cmp-table td.worst{color:var(--red-t)}
 </style>
-</head>
-<body>
 
-<header class="topbar">
-  <a class="logo" href="#">
-    <div class="logo-mark"><i class="ti ti-building-skyscraper"></i></div>
+<div class="shell">
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-sq"><i class="ti ti-building-skyscraper" aria-hidden="true"></i></div>
     DataCenterIQ
-  </a>
-  <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('map',this)"><i class="ti ti-map-2"></i> Map</button>
-    <button class="nav-tab" onclick="switchTab('economics',this)"><i class="ti ti-calculator"></i> Economics</button>
-    <button class="nav-tab" onclick="switchTab('spv',this)"><i class="ti ti-shield-lock"></i> SPV Monitor</button>
-  </nav>
-  <div class="topbar-right">
-    <span class="live-badge"><span class="live-dot"></span> Live</span>
-    <span class="count-label">847 facilities tracked globally</span>
-    <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode"><i class="ti ti-moon-stars" id="theme-icon"></i></button>
   </div>
-</header>
-
-<div class="main">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sb-section">
-      <div class="sb-label">Region filter</div>
-      <div class="filter-item active" onclick="filterRegion('all',this)"><div class="filter-dot" style="background:#888"></div>All regions<span class="filter-count">847</span></div>
-      <div class="filter-item" onclick="filterRegion('na',this)"><div class="filter-dot" style="background:#185FA5"></div>North America<span class="filter-count">312</span></div>
-      <div class="filter-item" onclick="filterRegion('eu',this)"><div class="filter-dot" style="background:#1D9E75"></div>Europe<span class="filter-count">218</span></div>
-      <div class="filter-item" onclick="filterRegion('apac',this)"><div class="filter-dot" style="background:#D85A30"></div>Asia-Pacific<span class="filter-count">247</span></div>
-      <div class="filter-item" onclick="filterRegion('mea',this)"><div class="filter-dot" style="background:#BA7517"></div>Middle East & Africa<span class="filter-count">70</span></div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-label">Global snapshot</div>
-      <div class="stat-grid">
-        <div class="stat-card"><div class="stat-val">2.4 TW</div><div class="stat-lbl">Total capacity</div></div>
-        <div class="stat-card"><div class="stat-val">$847B</div><div class="stat-lbl">Asset value</div></div>
-        <div class="stat-card"><div class="stat-val">$2.1T</div><div class="stat-lbl">Total debt</div></div>
-        <div class="stat-card"><div class="stat-val">143</div><div class="stat-lbl">Active SPVs</div></div>
-      </div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-label">Risk alerts</div>
-      <div class="alert-item">
-        <div class="alert-icon" style="background:var(--red-bg); color:var(--red-text)"><i class="ti ti-alert-triangle"></i></div>
-        <div><div class="alert-title">3 SPVs — refi pressure</div><div class="alert-sub">Maturity &lt;6 months · $4.2B</div></div>
-      </div>
-      <div class="alert-item">
-        <div class="alert-icon" style="background:var(--amber-bg); color:var(--amber-text)"><i class="ti ti-bolt"></i></div>
-        <div><div class="alert-title">Energy price spike</div><div class="alert-sub">Germany, Poland +18%</div></div>
-      </div>
-      <div class="alert-item">
-        <div class="alert-icon" style="background:var(--green-bg); color:var(--green-text)"><i class="ti ti-trending-up"></i></div>
-        <div><div class="alert-title">New capacity online</div><div class="alert-sub">Malaysia 840MW · Q3 2026</div></div>
-      </div>
-    </div>
-    <div class="sb-section" style="flex:1">
-      <div class="sb-label">IRR heatmap</div>
-      <div style="font-size:11px; color:var(--text3); margin-bottom:8px;">Click a marker to inspect</div>
-      <div id="irr-list"></div>
-    </div>
-  </aside>
-
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- MAP VIEW -->
-    <div id="map-view" style="flex:1; display:flex; position:relative; overflow:hidden;">
-      <div class="map-wrap" id="map-wrap">
-        <svg class="map-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" id="mapsvg">
-          <!-- Ocean -->
-          <rect width="900" height="560" fill="inherit"/>
-          <!-- North America -->
-          <path class="land" d="M 60 55 L 100 48 L 150 50 L 200 55 L 230 75 L 240 100 L 235 130 L 225 155 L 210 175 L 190 195 L 170 210 L 150 218 L 130 215 L 110 205 L 90 190 L 72 170 L 58 148 L 48 120 L 46 95 L 52 72 Z"/>
-          <path class="land" d="M 155 220 L 185 215 L 205 235 L 215 265 L 218 300 L 210 335 L 195 365 L 172 385 L 150 390 L 128 380 L 112 355 L 107 320 L 110 285 L 120 258 L 138 240 Z"/>
-          <!-- Greenland -->
-          <path class="land" d="M 235 28 L 275 22 L 295 35 L 290 60 L 265 72 L 240 65 L 228 48 Z"/>
-          <!-- Europe -->
-          <path class="land" d="M 398 42 L 440 38 L 470 48 L 488 68 L 485 90 L 468 105 L 445 112 L 418 108 L 398 92 L 388 72 L 390 54 Z"/>
-          <!-- UK -->
-          <path class="land" d="M 378 48 L 392 44 L 400 55 L 396 68 L 382 72 L 372 63 L 374 52 Z"/>
-          <!-- Scandinavia -->
-          <path class="land" d="M 440 22 L 465 18 L 475 35 L 468 52 L 448 55 L 435 42 Z"/>
-          <!-- Africa -->
-          <path class="land" d="M 408 125 L 465 118 L 495 142 L 505 185 L 510 235 L 500 285 L 478 330 L 448 360 L 418 365 L 390 345 L 372 305 L 368 260 L 373 215 L 385 170 L 396 145 Z"/>
-          <!-- Asia (simplified) -->
-          <path class="land" d="M 495 35 L 680 28 L 730 48 L 755 80 L 760 115 L 740 145 L 705 162 L 665 168 L 620 160 L 578 148 L 540 138 L 510 120 L 498 95 L 492 65 Z"/>
-          <!-- India -->
-          <path class="land" d="M 598 150 L 638 145 L 658 168 L 660 200 L 648 230 L 625 248 L 605 242 L 588 220 L 582 192 L 590 168 Z"/>
-          <!-- Southeast Asia -->
-          <path class="land" d="M 660 168 L 700 162 L 720 180 L 722 205 L 708 222 L 685 225 L 665 210 L 657 190 Z"/>
-          <!-- Japan / Korea -->
-          <ellipse class="land" cx="750" cy="118" rx="22" ry="32"/>
-          <!-- Australia -->
-          <path class="land" d="M 680 300 L 775 295 L 810 322 L 815 368 L 795 405 L 755 422 L 715 415 L 685 388 L 668 352 L 668 322 Z"/>
-          <!-- New Zealand -->
-          <ellipse class="land" cx="835" cy="410" rx="12" ry="22"/>
-          <!-- Middle East -->
-          <path class="land" d="M 508 128 L 560 122 L 582 138 L 585 162 L 568 175 L 535 172 L 510 155 Z"/>
-          <!-- Grid lines -->
-          <line x1="0" y1="280" x2="900" y2="280" stroke="rgba(180,200,220,0.3)" stroke-width="0.5" stroke-dasharray="6,6"/>
-          <line x1="450" y1="0" x2="450" y2="560" stroke="rgba(180,200,220,0.3)" stroke-width="0.5" stroke-dasharray="6,6"/>
-          <!-- Markers will be injected by JS -->
-          <g id="markers"></g>
-        </svg>
-        <div class="map-tooltip" id="map-tooltip"></div>
-        <div class="map-hint"><i class="ti ti-click"></i> Click a marker to inspect</div>
-        <div class="map-legend">
-          <div class="legend-row"><div class="filter-dot" style="background:#185FA5"></div>North America</div>
-          <div class="legend-row"><div class="filter-dot" style="background:#1D9E75"></div>Europe</div>
-          <div class="legend-row"><div class="filter-dot" style="background:#D85A30"></div>Asia-Pacific</div>
-          <div class="legend-row"><div class="filter-dot" style="background:#BA7517"></div>Middle East</div>
-          <div class="legend-row"><div class="filter-dot" style="background:#7F77DD"></div>South America</div>
-          <div class="legend-row" style="margin-top:6px; padding-top:6px; border-top:0.5px solid var(--border);">
-            <svg width="18" height="12"><circle cx="6" cy="6" r="5" fill="#185FA5" opacity="0.85"/><circle cx="6" cy="6" r="10" fill="#185FA5" opacity="0.12"/></svg>
-            <span>Hyperscale hub</span>
-          </div>
-        </div>
-      </div>
-      <!-- Detail panel inside map view -->
-      <div class="detail-panel" id="detail-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title" id="panel-title">—</div>
-            <div class="panel-sub" id="panel-sub">—</div>
-          </div>
-          <button class="panel-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="panel-body" id="panel-body"></div>
-      </div>
-    </div>
-
-    <!-- ECONOMICS VIEW -->
-    <div id="economics-view" class="eco-wrap" style="display:none;">
-      <div class="eco-inner">
-        <div class="eco-title">Profitability Calculator</div>
-        <div class="eco-sub">Adjust parameters — IRR and EBITDA update in real time</div>
-        <div class="param-grid">
-          <div>
-            <div class="param-label">Capacity (MW) <span id="v-mw">100</span></div>
-            <input type="range" min="10" max="500" value="100" step="10" oninput="calcIRR()">
-          </div>
-          <div>
-            <div class="param-label">Power cost ($/MWh) <span id="v-elec">55</span></div>
-            <input type="range" min="20" max="130" value="55" step="1" oninput="calcIRR()">
-          </div>
-          <div>
-            <div class="param-label">PUE (efficiency) <span id="v-pue">1.40</span></div>
-            <input type="range" min="110" max="200" value="140" step="1" oninput="calcIRR()">
-          </div>
-          <div>
-            <div class="param-label">Colo rate ($/kW/mo) <span id="v-colo">150</span></div>
-            <input type="range" min="50" max="350" value="150" step="5" oninput="calcIRR()">
-          </div>
-          <div>
-            <div class="param-label">CAPEX (M$/MW) <span id="v-capex">7.0</span></div>
-            <input type="range" min="3" max="15" value="7" step="0.5" oninput="calcIRR()">
-          </div>
-          <div>
-            <div class="param-label">Occupancy (%) <span id="v-occ">85</span></div>
-            <input type="range" min="50" max="100" value="85" step="1" oninput="calcIRR()">
-          </div>
-        </div>
-        <div class="result-grid">
-          <div class="result-card" style="border: 1.5px solid var(--blue); background: var(--blue-bg);">
-            <div class="result-val" id="r-irr" style="color:var(--blue);">—</div>
-            <div class="result-lbl">IRR</div>
-          </div>
-          <div class="result-card">
-            <div class="result-val" id="r-ebitda">—</div>
-            <div class="result-lbl">EBITDA / year</div>
-          </div>
-          <div class="result-card">
-            <div class="result-val" id="r-rev">—</div>
-            <div class="result-lbl">Revenue / year</div>
-          </div>
-          <div class="result-card">
-            <div class="result-val" id="r-payback">—</div>
-            <div class="result-lbl">Payback period</div>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="eco-chart" role="img" aria-label="10-year cashflow forecast"></canvas>
-        </div>
-        <div class="chart-label">Annual cashflow — 10 year forecast (EBITDA after capex drawdown)</div>
-
-        <div class="geo-compare" style="margin-top:24px;">
-          <div class="geo-compare-header"><i class="ti ti-world"></i> Global IRR comparison — same model parameters</div>
-          <div id="geo-compare-rows"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SPV VIEW -->
-    <div id="spv-view" class="spv-wrap" style="display:none;">
-      <div class="spv-inner">
-        <div class="eco-title">SPV Monitor</div>
-        <div class="eco-sub">Off-balance sheet debt tracking — refinancing pressure ranked by urgency</div>
-        <div class="spv-summary-grid">
-          <div class="stat-card" style="border-left: 3px solid var(--red);"><div class="stat-val" style="color:var(--red-text);">3</div><div class="stat-lbl">Critical risk</div></div>
-          <div class="stat-card" style="border-left: 3px solid var(--amber);"><div class="stat-val" style="color:var(--amber-text);">12</div><div class="stat-lbl">High risk</div></div>
-          <div class="stat-card"><div class="stat-val">128</div><div class="stat-lbl">Under monitoring</div></div>
-        </div>
-
-        <div class="spv-card">
-          <div class="spv-card-header">
-            <div>
-              <div class="spv-card-name">Hyperscale EMEA Infra SPV I</div>
-              <div class="spv-card-detail">Sponsors: Microsoft + Blackrock · Frankfurt, Dublin, Amsterdam</div>
-            </div>
-            <span class="risk-pill risk-critical">Critical</span>
-          </div>
-          <div class="spv-metrics">
-            <div class="spv-metric"><div class="spv-metric-val">$3.2B</div><div class="spv-metric-lbl">Debt</div></div>
-            <div class="spv-metric"><div class="spv-metric-val" style="color:var(--red-text);">74%</div><div class="spv-metric-lbl">LTV</div></div>
-            <div class="spv-metric"><div class="spv-metric-val">Sept '26</div><div class="spv-metric-lbl">Maturity</div></div>
-          </div>
-          <div class="spv-alert"><i class="ti ti-alert-circle"></i> Refinancing required within 90 days. Fixed 4.2% → floating 6.8%+ pressure. Est. $96–128M additional annual interest.</div>
-          <button class="spv-cta">View full underwriting report →</button>
-        </div>
-
-        <div class="spv-card">
-          <div class="spv-card-header">
-            <div>
-              <div class="spv-card-name">AI Compute Infrastructure Trust II</div>
-              <div class="spv-card-detail">Sponsors: Google + KKR · Virginia, Texas, Ohio</div>
-            </div>
-            <span class="risk-pill risk-high">High</span>
-          </div>
-          <div class="spv-metrics">
-            <div class="spv-metric"><div class="spv-metric-val">$5.1B</div><div class="spv-metric-lbl">Debt</div></div>
-            <div class="spv-metric"><div class="spv-metric-val" style="color:var(--amber-text);">68%</div><div class="spv-metric-lbl">LTV</div></div>
-            <div class="spv-metric"><div class="spv-metric-val">Mar '27</div><div class="spv-metric-lbl">Maturity</div></div>
-          </div>
-          <button class="spv-cta">View full underwriting report →</button>
-        </div>
-
-        <div class="spv-card">
-          <div class="spv-card-header">
-            <div>
-              <div class="spv-card-name">Nordic Green DC SPV</div>
-              <div class="spv-card-detail">Sponsors: Equinix + EQT · Stockholm, Helsinki, Oslo</div>
-            </div>
-            <span class="risk-pill risk-stable">Stable</span>
-          </div>
-          <div class="spv-metrics">
-            <div class="spv-metric"><div class="spv-metric-val">$820M</div><div class="spv-metric-lbl">Debt</div></div>
-            <div class="spv-metric"><div class="spv-metric-val" style="color:var(--green-text);">58%</div><div class="spv-metric-lbl">LTV</div></div>
-            <div class="spv-metric"><div class="spv-metric-val">Dec '27</div><div class="spv-metric-lbl">Maturity</div></div>
-          </div>
-          <button class="spv-cta">View full underwriting report →</button>
-        </div>
-
-        <div class="spv-card">
-          <div class="spv-card-header">
-            <div>
-              <div class="spv-card-name">APAC GPU Infrastructure SPV</div>
-              <div class="spv-card-detail">Sponsors: SoftBank + GIC · Singapore, Tokyo, Seoul</div>
-            </div>
-            <span class="risk-pill risk-high">High</span>
-          </div>
-          <div class="spv-metrics">
-            <div class="spv-metric"><div class="spv-metric-val">$2.4B</div><div class="spv-metric-lbl">Debt</div></div>
-            <div class="spv-metric"><div class="spv-metric-val" style="color:var(--amber-text);">71%</div><div class="spv-metric-lbl">LTV</div></div>
-            <div class="spv-metric"><div class="spv-metric-val">Jun '27</div><div class="spv-metric-lbl">Maturity</div></div>
-          </div>
-          <button class="spv-cta">View full underwriting report →</button>
-        </div>
-
-        <div class="spv-card">
-          <div class="spv-card-header">
-            <div>
-              <div class="spv-card-name">Malaysia AI Hub SPV</div>
-              <div class="spv-card-detail">Sponsors: YTL + Microsoft · Johor Bahru</div>
-            </div>
-            <span class="risk-pill risk-high">Under construction</span>
-          </div>
-          <div class="spv-metrics">
-            <div class="spv-metric"><div class="spv-metric-val">$2.8B</div><div class="spv-metric-lbl">Debt</div></div>
-            <div class="spv-metric"><div class="spv-metric-val" style="color:var(--amber-text);">62%</div><div class="spv-metric-lbl">LTV</div></div>
-            <div class="spv-metric"><div class="spv-metric-val">Q3 '26</div><div class="spv-metric-lbl">Online</div></div>
-          </div>
-          <button class="spv-cta">View full underwriting report →</button>
-        </div>
-      </div>
-    </div>
-
+  <div class="tabs">
+    <button class="tab on" onclick="goTab('assets',this)"><i class="ti ti-list-details" aria-hidden="true"></i> Assets</button>
+    <button class="tab" onclick="goTab('compare',this)"><i class="ti ti-layout-columns" aria-hidden="true"></i> Compare</button>
+    <button class="tab" onclick="goTab('spv',this)"><i class="ti ti-shield-lock" aria-hidden="true"></i> SPV Monitor</button>
+  </div>
+  <div class="tr">
+    <span class="live"><span class="dot"></span>Live</span>
+    <span style="font-size:11px;color:var(--t3)">847 assets · 143 SPVs</span>
   </div>
 </div>
 
-<footer class="footer">
-  <span>DataCenterIQ © 2026 — Global Data Center Intelligence Platform</span>
-  <span>847 facilities · 143 SPVs · 38 countries · Updated June 15, 2026</span>
-</footer>
+<div class="body">
+  <aside class="sidebar">
+    <div class="sb">
+      <div class="sbl">Region</div>
+      <div class="fi on" onclick="filterR('all',this)"><div class="fid" style="background:#888"></div>All<span class="fic">847</span></div>
+      <div class="fi" onclick="filterR('na',this)"><div class="fid" style="background:#185FA5"></div>North America<span class="fic">312</span></div>
+      <div class="fi" onclick="filterR('eu',this)"><div class="fid" style="background:#1D9E75"></div>Europe<span class="fic">218</span></div>
+      <div class="fi" onclick="filterR('apac',this)"><div class="fid" style="background:#D85A30"></div>Asia-Pacific<span class="fic">247</span></div>
+      <div class="fi" onclick="filterR('mea',this)"><div class="fid" style="background:#BA7517"></div>Middle East<span class="fic">70</span></div>
+    </div>
+    <div class="sb">
+      <div class="sbl">Global snapshot</div>
+      <div class="sg">
+        <div class="sc"><div class="sv">2.4 TW</div><div class="sl">Capacity</div></div>
+        <div class="sc"><div class="sv">$847B</div><div class="sl">Asset value</div></div>
+        <div class="sc"><div class="sv">$2.1T</div><div class="sl">Total debt</div></div>
+        <div class="sc"><div class="sv">143</div><div class="sl">Active SPVs</div></div>
+      </div>
+    </div>
+    <div class="sb" style="flex:1">
+      <div class="sbl">Risk alerts</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--red-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--red-t)"><i class="ti ti-alert-triangle" aria-hidden="true"></i> 3 SPVs — refi &lt;90d · $4.2B</div>
+        <div style="background:var(--amber-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--amber-t)"><i class="ti ti-bolt" aria-hidden="true"></i> Energy spike: DE/PL +18%</div>
+        <div style="background:var(--green-bg);border-radius:var(--r);padding:8px;font-size:11px;color:var(--green-t)"><i class="ti ti-trending-up" aria-hidden="true"></i> MY 840MW online Q3 2026</div>
+      </div>
+    </div>
+  </aside>
 
+  <!-- ASSETS TAB -->
+  <div id="tab-assets" class="content">
+    <div class="asset-list">
+      <div class="al-header">
+        <input class="al-search" placeholder="Search assets…" oninput="searchAssets(this.value)">
+        <select class="al-sort" onchange="sortAssets(this.value)">
+          <option value="irr">IRR ↓</option>
+          <option value="score">Score ↓</option>
+          <option value="mw">MW ↓</option>
+          <option value="ev">EV/MW ↓</option>
+        </select>
+      </div>
+      <div id="asset-list-body"></div>
+    </div>
+    <div id="detail-pane" class="detail">
+      <div class="dno">
+        <i class="ti ti-building-skyscraper" style="font-size:32px;opacity:.3" aria-hidden="true"></i>
+        <div style="font-size:13px">Select an asset to open the investment view</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARE TAB -->
+  <div id="tab-compare" class="compare-wrap" style="display:none">
+    <div style="font-size:15px;font-weight:500;color:var(--t1)">Multi-asset comparison</div>
+    <div style="font-size:12px;color:var(--t2);margin-top:3px;margin-bottom:12px">Select up to 5 assets to compare side-by-side</div>
+    <div class="compare-grid" id="compare-cards"></div>
+    <div id="compare-table-area"></div>
+  </div>
+
+  <!-- SPV TAB -->
+  <div id="tab-spv" style="display:none;flex:1;overflow-y:auto;padding:16px;background:var(--bg3)">
+    <div style="max-width:680px;margin:0 auto">
+      <div style="font-size:15px;font-weight:500;color:var(--t1)">SPV monitor</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;margin-bottom:14px">Off-balance-sheet debt entities — ranked by refinancing urgency</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+        <div class="sc" style="border-left:3px solid var(--red)"><div class="sv" style="color:var(--red-t)">3</div><div class="sl">Critical</div></div>
+        <div class="sc" style="border-left:3px solid var(--amber)"><div class="sv" style="color:var(--amber-t)">12</div><div class="sl">High risk</div></div>
+        <div class="sc"><div class="sv">128</div><div class="sl">Monitoring</div></div>
+      </div>
+      <div id="spv-list"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const DC = [
-  { id:'ashburn', name:'Ashburn, Virginia', sub:'USA — Hyperscale cluster', region:'na', cx:155, cy:118, mw:840, op:'Equinix / QTS / DataBank', gpu:'H100, A100, GB200', elec:'$42/MWh (PPA)', land:'$850k/acre', tax:'VA incentive 10yr', irr:21, ebitda:2.4, capex:'$5.9M/MW', occ:94, spv:true, spvname:'Ashburn Hyperscale SPV III', debt:'$4.1B', ltv:71, status:'active', rating:'A-', big:true, color:'#185FA5' },
-  { id:'oregon', name:'Oregon, USA', sub:'USA — Cheap hydropower', region:'na', cx:72, cy:112, mw:480, op:'Amazon / Google', gpu:'H100, TPU', elec:'$28/MWh (hydro)', land:'$320k/acre', tax:'OR — no sales tax', irr:23, ebitda:2.7, capex:'$5.5M/MW', occ:96, spv:false, status:'active', rating:'AA-', big:false, color:'#185FA5' },
-  { id:'dallas', name:'Dallas, Texas', sub:'USA — Growing hub', region:'na', cx:120, cy:148, mw:260, op:'CyrusOne / Flexential', gpu:'H100, A100', elec:'$48/MWh', land:'$280k/acre', tax:'TX — no state income tax', irr:19, ebitda:2.2, capex:'$6.1M/MW', occ:87, spv:false, status:'active', rating:'BBB+', big:false, color:'#185FA5' },
-  { id:'london', name:'London, UK', sub:'Europe — Primary node', region:'eu', cx:382, cy:60, mw:320, op:'Ark Data / NTT / Equinix', gpu:'H100, L40S', elec:'£85/MWh', land:'£2.1M/acre', tax:'UK FZ — 0% corp 5yr', irr:16, ebitda:1.9, capex:'$8.2M/MW', occ:88, spv:false, status:'active', rating:'BBB+', big:true, color:'#1D9E75' },
-  { id:'frankfurt', name:'Frankfurt, Germany', sub:'Europe — Financial hub', region:'eu', cx:440, cy:72, mw:420, op:'e-shelter / Interxion', gpu:'H100, A100', elec:'€110/MWh (HIGH!)', land:'€1.8M/acre', tax:'DE — standard 15% corp', irr:13, ebitda:1.5, capex:'$9.8M/MW', occ:82, spv:true, spvname:'Hyperscale EMEA Infra SPV I', debt:'$3.2B', ltv:74, status:'warning', rating:'BB', big:true, color:'#1D9E75' },
-  { id:'amsterdam', name:'Amsterdam, Netherlands', sub:'Europe — AMS-IX node', region:'eu', cx:420, cy:55, mw:350, op:'Equinix / Digital Realty', gpu:'H100', elec:'€88/MWh', land:'€1.5M/acre', tax:'NL — Innovation Box 9%', irr:17, ebitda:2.0, capex:'$8.5M/MW', occ:85, spv:false, status:'active', rating:'BBB+', big:false, color:'#1D9E75' },
-  { id:'stockholm', name:'Stockholm, Sweden', sub:'Europe — Green energy', region:'eu', cx:450, cy:40, mw:180, op:'Hydro66 / DigiPlex', gpu:'H100', elec:'€28/MWh (hydro)', land:'€0.4M/acre', tax:'SE — 6.5% energy tax', irr:24, ebitda:2.8, capex:'$5.1M/MW', occ:89, spv:false, status:'active', rating:'A+', big:false, color:'#1D9E75' },
-  { id:'singapore', name:'Singapore', sub:'APAC — Regional hub', region:'apac', cx:685, cy:210, mw:280, op:'ST Telemedia / Keppel', gpu:'H100, H200', elec:'SGD $95/MWh', land:'SGD $3.5M/acre', tax:'SG Pioneer 5% corp 10yr', irr:19, ebitda:2.1, capex:'$9.1M/MW', occ:91, spv:true, spvname:'APAC GPU Infrastructure SPV', debt:'$2.4B', ltv:71, status:'active', rating:'A', big:true, color:'#D85A30' },
-  { id:'tokyo', name:'Tokyo, Japan', sub:'APAC — Premium market', region:'apac', cx:752, cy:118, mw:200, op:'NTT / Equinix / IIJ', gpu:'H100, H200', elec:'¥18/kWh', land:'¥450M/acre', tax:'JP — 23.2% corp', irr:15, ebitda:2.0, capex:'$11.2M/MW', occ:93, spv:false, status:'active', rating:'A', big:false, color:'#D85A30' },
-  { id:'malaysia', name:'Johor Bahru, Malaysia', sub:'APAC — New build (Q3 2026)', region:'apac', cx:698, cy:200, mw:840, op:'YTL + Microsoft JV', gpu:'GB200 (planned)', elec:'MYR $45/MWh (cheap!)', land:'MYR $180k/acre', tax:'MY — 0% corp 10yr zone', irr:26, ebitda:3.1, capex:'$4.2M/MW', occ:0, spv:true, spvname:'Malaysia AI Hub SPV', debt:'$2.8B', ltv:62, status:'construction', rating:'BB+', big:true, color:'#D85A30' },
-  { id:'dubai', name:'Dubai, UAE', sub:'Middle East — Growing market', region:'mea', cx:555, cy:155, mw:120, op:'Moro Hub / du', gpu:'H100, L40S', elec:'AED $35/MWh', land:'AED $1.2M/acre', tax:'UAE — 0% corp (Free Zone)', irr:22, ebitda:2.6, capex:'$7.1M/MW', occ:78, spv:false, status:'active', rating:'A-', big:false, color:'#BA7517' },
-  { id:'riyadh', name:'Riyadh, Saudi Arabia', sub:'Middle East — Vision 2030', region:'mea', cx:535, cy:162, mw:90, op:'Saudi Aramco JV / STC', gpu:'H100', elec:'$18/MWh (subsidised)', land:'$0.4M/acre', tax:'SA — 20% corp', irr:25, ebitda:2.9, capex:'$6.0M/MW', occ:72, spv:false, status:'active', rating:'BBB', big:false, color:'#BA7517' },
-  { id:'saopaulo', name:'São Paulo, Brazil', sub:'South America — Primary market', region:'la', cx:210, cy:300, mw:150, op:'Ascenty / Equinix', gpu:'H100', elec:'BRL $320/MWh', land:'BRL $8M/acre', tax:'BR — high tax burden', irr:14, ebitda:1.7, capex:'$10.2M/MW', occ:81, spv:false, status:'active', rating:'BB', big:false, color:'#7F77DD' }
+const ASSETS = [
+  {id:'ashburn',name:'Ashburn, Virginia',sub:'USA · Hyperscale cluster',region:'na',color:'#185FA5',
+   mw:840,occ:94,gpu:'H100, A100, GB200',op:'Equinix / QTS / DataBank',
+   elec_price:42,elec_avail:1200,elec_pipeline:400,pue:1.35,grid_risk:'Low',
+   irr_lo:19,irr_hi:23,irr:21,ebitda_mw:2.4,cash_yield:7.2,
+   ev_mw:14.8,ev_total:12432,capex_mw:5.9,rating:'A-',
+   capex:{land:8,power:28,build:48,network:16},
+   debt:4100,ltv:71,equity:1680,debt_rate:5.1,maturity:'2028',offtake:'AWS 60%, Azure 25%',
+   subsidies:'VA BPOL exemption, 10yr abatement',exit_cap:5.8,
+   score:81,score_power:26,score_conn:18,score_reg:13,score_cost:12,score_demand:12,
+   spv:true,spvname:'Ashburn Hyperscale SPV III',spv_risk:'stable',
+   status:'active'},
+  {id:'oregon',name:'Oregon, USA',sub:'USA · Cheap hydro',region:'na',color:'#185FA5',
+   mw:480,occ:96,gpu:'H100, TPU v5',op:'Amazon / Google',
+   elec_price:28,elec_avail:900,elec_pipeline:200,pue:1.30,grid_risk:'Very low',
+   irr_lo:21,irr_hi:25,irr:23,ebitda_mw:2.7,cash_yield:8.1,
+   ev_mw:16.2,ev_total:7776,capex_mw:5.5,rating:'AA-',
+   capex:{land:5,power:25,build:52,network:18},
+   debt:2800,ltv:61,equity:1792,debt_rate:4.8,maturity:'2029',offtake:'AWS 85%, Google 15%',
+   subsidies:'OR no sales tax, BPA hydro PPA',exit_cap:5.2,
+   score:87,score_power:29,score_conn:17,score_reg:14,score_cost:15,score_demand:12,
+   spv:false,status:'active'},
+  {id:'stockholm',name:'Stockholm, Sweden',sub:'Europe · Green hydro',region:'eu',color:'#1D9E75',
+   mw:180,occ:89,gpu:'H100, A100',op:'Hydro66 / DigiPlex',
+   elec_price:28,elec_avail:500,elec_pipeline:300,pue:1.25,grid_risk:'Low',
+   irr_lo:22,irr_hi:26,irr:24,ebitda_mw:2.8,cash_yield:8.4,
+   ev_mw:17.1,ev_total:3078,capex_mw:5.1,rating:'A+',
+   capex:{land:4,power:22,build:55,network:19},
+   debt:900,ltv:51,equity:864,debt_rate:4.3,maturity:'2030',offtake:'Meta 45%, Microsoft 30%',
+   subsidies:'SE hydro PPA €0.018/kWh, green cert',exit_cap:5.0,
+   score:85,score_power:28,score_conn:16,score_reg:15,score_cost:14,score_demand:12,
+   spv:false,status:'active'},
+  {id:'frankfurt',name:'Frankfurt, Germany',sub:'Europe · Financial hub',region:'eu',color:'#1D9E75',
+   mw:420,occ:82,gpu:'H100, A100',op:'e-shelter / Interxion / Iron Mountain',
+   elec_price:110,elec_avail:600,elec_pipeline:80,pue:1.42,grid_risk:'Medium-high',
+   irr_lo:11,irr_hi:15,irr:13,ebitda_mw:1.5,cash_yield:4.8,
+   ev_mw:9.2,ev_total:3864,capex_mw:9.8,rating:'BB',
+   capex:{land:14,power:35,build:38,network:13},
+   debt:3200,ltv:74,equity:1128,debt_rate:4.2,maturity:'2026-09',offtake:'Deutsche Telekom 40%, various',
+   subsidies:'None material — standard DE corp 15%',exit_cap:7.8,
+   score:54,score_power:11,score_conn:18,score_reg:10,score_cost:6,score_demand:9,
+   spv:true,spvname:'Hyperscale EMEA Infra SPV I',spv_risk:'critical',
+   status:'warning'},
+  {id:'singapore',name:'Singapore',sub:'APAC · Regional hub',region:'apac',color:'#D85A30',
+   mw:280,occ:91,gpu:'H100, H200',op:'ST Telemedia / Keppel',
+   elec_price:95,elec_avail:400,elec_pipeline:50,pue:1.50,grid_risk:'High — cap constrained',
+   irr_lo:17,irr_hi:21,irr:19,ebitda_mw:2.1,cash_yield:6.3,
+   ev_mw:12.8,ev_total:3584,capex_mw:9.1,rating:'A',
+   capex:{land:18,power:32,build:38,network:12},
+   debt:2400,ltv:71,equity:976,debt_rate:4.6,maturity:'2027-06',offtake:'Google 50%, AWS 30%',
+   subsidies:'SG Pioneer status 5% corp 10yr',exit_cap:6.5,
+   score:68,score_power:14,score_conn:19,score_reg:13,score_cost:9,score_demand:13,
+   spv:true,spvname:'APAC GPU Infrastructure SPV',spv_risk:'high',
+   status:'active'},
+  {id:'malaysia',name:'Johor Bahru, Malaysia',sub:'APAC · New build Q3 2026',region:'apac',color:'#D85A30',
+   mw:840,occ:0,gpu:'GB200 (planned)',op:'YTL + Microsoft JV',
+   elec_price:45,elec_avail:1500,elec_pipeline:2000,pue:1.35,grid_risk:'Low — dedicated line',
+   irr_lo:23,irr_hi:29,irr:26,ebitda_mw:3.1,cash_yield:0,
+   ev_mw:18.5,ev_total:15540,capex_mw:4.2,rating:'BB+',
+   capex:{land:6,power:26,build:54,network:14},
+   debt:2800,ltv:62,equity:1708,debt_rate:5.4,maturity:'2029',offtake:'Microsoft 100% (under construction)',
+   subsidies:'MY 0% corp 10yr Iskandar zone, grid subsidy',exit_cap:5.5,
+   score:79,score_power:25,score_conn:14,score_reg:14,score_cost:14,score_demand:12,
+   spv:true,spvname:'Malaysia AI Hub SPV',spv_risk:'high',
+   status:'construction'},
+  {id:'dubai',name:'Dubai, UAE',sub:'Middle East · Free zone',region:'mea',color:'#BA7517',
+   mw:120,occ:78,gpu:'H100, L40S',op:'Moro Hub / du',
+   elec_price:35,elec_avail:350,elec_pipeline:200,pue:1.55,grid_risk:'Low',
+   irr_lo:19,irr_hi:25,irr:22,ebitda_mw:2.6,cash_yield:7.8,
+   ev_mw:15.4,ev_total:1848,capex_mw:7.1,rating:'A-',
+   capex:{land:10,power:30,build:46,network:14},
+   debt:600,ltv:48,equity:648,debt_rate:5.0,maturity:'2028',offtake:'Microsoft 35%, various',
+   subsidies:'UAE Free Zone 0% corp, subsidised water',exit_cap:6.0,
+   score:74,score_power:22,score_conn:16,score_reg:14,score_cost:12,score_demand:10,
+   spv:false,status:'active'},
+  {id:'tokyo',name:'Tokyo, Japan',sub:'APAC · Premium market',region:'apac',color:'#D85A30',
+   mw:200,occ:93,gpu:'H100, H200',op:'NTT / Equinix / IIJ',
+   elec_price:158,elec_avail:300,elec_pipeline:60,pue:1.45,grid_risk:'Medium',
+   irr_lo:13,irr_hi:17,irr:15,ebitda_mw:2.0,cash_yield:5.2,
+   ev_mw:10.8,ev_total:2160,capex_mw:11.2,rating:'A',
+   capex:{land:22,power:28,build:38,network:12},
+   debt:1100,ltv:57,equity:832,debt_rate:2.1,maturity:'2028',offtake:'SoftBank 40%, AWS 30%',
+   subsidies:'JP green DC incentive — JPY subsidy on PUE',exit_cap:6.8,
+   score:64,score_power:13,score_conn:18,score_reg:12,score_cost:8,score_demand:13,
+   spv:false,status:'active'},
+  {id:'riyadh',name:'Riyadh, Saudi Arabia',sub:'Middle East · Vision 2030',region:'mea',color:'#BA7517',
+   mw:90,occ:72,gpu:'H100',op:'Saudi Aramco JV / STC',
+   elec_price:18,elec_avail:800,elec_pipeline:1200,pue:1.65,grid_risk:'Very low',
+   irr_lo:22,irr_hi:28,irr:25,ebitda_mw:2.9,cash_yield:8.7,
+   ev_mw:16.8,ev_total:1512,capex_mw:6.0,rating:'BBB',
+   capex:{land:5,power:28,build:50,network:17},
+   debt:350,ltv:42,equity:484,debt_rate:4.9,maturity:'2029',offtake:'Saudi Aramco 60%',
+   subsidies:'SA Vision 2030 incentive, subsidised power',exit_cap:5.8,
+   score:72,score_power:24,score_conn:13,score_reg:12,score_cost:14,score_demand:9,
+   spv:false,status:'active'},
 ];
 
-function statusMeta(s) {
-  if (s==='warning') return { bg:'#FCEBEB', col:'#A32D2D', label:'SPV Risk Warning' };
-  if (s==='construction') return { bg:'#FAEEDA', col:'#854F0B', label:'Under construction' };
-  return { bg:'#EAF3DE', col:'#3B6D11', label:'Operational' };
-}
-function irrCol(v) {
-  if (v >= 22) return '#3B6D11';
-  if (v >= 16) return '#185FA5';
-  return '#854F0B';
-}
+const SPV_LIST = [
+  {name:'Hyperscale EMEA Infra SPV I',sponsors:'Microsoft + Blackrock',sites:'Frankfurt, Dublin, Amsterdam',
+   debt:3200,ltv:74,maturity:'Sept 2026',rate_fixed:4.2,rate_float:6.8,dscr:1.41,risk:'critical',
+   alert:'Refinancing required within 90 days. Fixed 4.2% → floating 6.8%+. Est. $96–128M additional annual interest. LTV breach risk if asset values fall 5%.'},
+  {name:'APAC GPU Infrastructure SPV',sponsors:'SoftBank + GIC',sites:'Singapore, Tokyo, Seoul',
+   debt:2400,ltv:71,maturity:'Jun 2027',rate_fixed:4.6,rate_float:6.4,dscr:1.58,risk:'high',
+   alert:'LTV above 70% threshold. Singapore grid cap constrains expansion. Floating rate refinancing in 12 months.'},
+  {name:'AI Compute Infrastructure Trust II',sponsors:'Google + KKR',sites:'Virginia, Texas, Ohio',
+   debt:5100,ltv:68,maturity:'Mar 2027',rate_fixed:4.4,rate_float:6.2,dscr:1.72,risk:'high',alert:''},
+  {name:'Malaysia AI Hub SPV',sponsors:'YTL + Microsoft',sites:'Johor Bahru',
+   debt:2800,ltv:62,maturity:'Q3 2026 (completion)',rate_fixed:5.4,rate_float:7.0,dscr:0,risk:'high',
+   alert:'Construction phase — no DSCR yet. Completion risk. Single offtake (Microsoft).'},
+  {name:'Nordic Green DC SPV',sponsors:'Equinix + EQT',sites:'Stockholm, Helsinki, Oslo',
+   debt:820,ltv:51,maturity:'Dec 2027',rate_fixed:4.3,rate_float:5.9,dscr:2.15,risk:'stable',alert:''},
+  {name:'Ashburn Hyperscale SPV III',sponsors:'Equinix + Brookfield',sites:'Northern Virginia',
+   debt:4100,ltv:61,maturity:'2028',rate_fixed:5.1,rate_float:6.6,dscr:2.38,risk:'stable',alert:''},
+];
 
-// Build markers
-function buildMarkers() {
-  const g = document.getElementById('markers');
-  g.innerHTML = '';
-  DC.forEach(d => {
-    const r = d.big ? 6 : 4;
-    const pulse = d.big ? `<circle r="${r+10}" fill="${d.color}" opacity="0.1"/>` : '';
-    const warnRing = d.status==='warning' ? `<circle r="${r+14}" fill="none" stroke="${d.color}" stroke-width="1" opacity="0.35"/>` : '';
-    const constructRing = d.status==='construction' ? `<circle r="${r+14}" fill="none" stroke="${d.color}" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>` : '';
-    const el = document.createElementNS('http://www.w3.org/2000/svg','g');
-    el.setAttribute('class','dc-marker');
-    el.setAttribute('transform',`translate(${d.cx},${d.cy})`);
-    el.innerHTML = `${pulse}${warnRing}${constructRing}<circle r="${r}" fill="${d.color}" opacity="0.9" stroke="white" stroke-width="1.5"/>`;
-    el.addEventListener('mouseenter', e => showTooltip(d, e));
-    el.addEventListener('mouseleave', hideTooltip);
-    el.addEventListener('click', () => showDetail(d.id));
-    g.appendChild(el);
+let currentRegion='all', selectedId=null, compareSet=new Set(), sortKey='irr';
+
+function scoreColor(s){return s>=75?'#1D9E75':s>=55?'#185FA5':'#E24B4A'}
+function irrColor(v){return v>=22?'#1D9E75':v>=16?'#185FA5':'#BA7517'}
+function riskColor(r){return r==='critical'?'#E24B4A':r==='high'?'#BA7517':'#1D9E75'}
+function riskBg(r){return r==='critical'?'#FCEBEB':r==='high'?'#FAEEDA':'#EAF3DE'}
+function riskT(r){return r==='critical'?'#A32D2D':r==='high'?'#854F0B':'#3B6D11'}
+function statusLabel(s){return s==='warning'?'SPV alert':s==='construction'?'Under construction':'Operational'}
+function statusCol(s){return s==='warning'?'#A32D2D':s==='construction'?'#854F0B':'#3B6D11'}
+function statusBg(s){return s==='warning'?'#FCEBEB':s==='construction'?'#FAEEDA':'#EAF3DE'}
+
+function filteredAssets(){
+  let a=[...ASSETS];
+  if(currentRegion!=='all') a=a.filter(x=>x.region===currentRegion);
+  if(window._search) a=a.filter(x=>x.name.toLowerCase().includes(window._search)||x.sub.toLowerCase().includes(window._search));
+  a.sort((x,y)=>{
+    if(sortKey==='irr') return y.irr-x.irr;
+    if(sortKey==='score') return y.score-x.score;
+    if(sortKey==='mw') return y.mw-x.mw;
+    if(sortKey==='ev') return y.ev_mw-x.ev_mw;
+    return 0;
   });
+  return a;
 }
 
-// Tooltip
-const tooltip = document.getElementById('map-tooltip');
-function showTooltip(d, e) {
-  const sm = statusMeta(d.status);
-  tooltip.innerHTML = `<div class="tt-name">${d.name}</div>
-    <div class="tt-row"><span class="tt-k">Capacity</span><span class="tt-v">${d.mw} MW</span></div>
-    <div class="tt-row"><span class="tt-k">IRR</span><span class="tt-v" style="color:${irrCol(d.irr)}">${d.irr}%</span></div>
-    <div class="tt-row"><span class="tt-k">Power</span><span class="tt-v">${d.elec}</span></div>
-    <div class="tt-row"><span class="tt-k">Rating</span><span class="tt-v">${d.rating}</span></div>
-    <div style="margin-top:6px;"><span style="font-size:10px; padding:2px 7px; border-radius:999px; background:${sm.bg}; color:${sm.col}; font-weight:600;">${sm.label}</span></div>`;
-  tooltip.classList.add('show');
-  posTooltip(e);
-}
-function posTooltip(e) {
-  const wrap = document.getElementById('map-wrap');
-  const rect = wrap.getBoundingClientRect();
-  let x = e.clientX - rect.left + 14;
-  let y = e.clientY - rect.top - 10;
-  if (x + 200 > rect.width) x = e.clientX - rect.left - 210;
-  tooltip.style.left = x + 'px';
-  tooltip.style.top = y + 'px';
-}
-function hideTooltip() { tooltip.classList.remove('show'); }
-document.getElementById('map-wrap').addEventListener('mousemove', e => {
-  if (tooltip.classList.contains('show')) posTooltip(e);
-});
-
-// Detail panel
-function showDetail(id) {
-  const d = DC.find(x => x.id === id);
-  if (!d) return;
-  const sm = statusMeta(d.status);
-  const irrW = Math.min(100, (d.irr / 30) * 100).toFixed(0);
-  let spvHtml = '';
-  if (d.spv) {
-    const ltvCol = d.ltv > 70 ? '#A32D2D' : d.ltv > 60 ? '#854F0B' : '#3B6D11';
-    spvHtml = `<div class="spv-box" style="background:${d.status==='warning'?'#fff8f8':'var(--bg2)'}; border-color:${d.status==='warning'?'#f5c4c4':'var(--border)'};">
-      <div class="spv-name"><i class="ti ti-building-bank"></i> ${d.spvname}</div>
-      <div class="metric-row"><span class="metric-k">Total debt</span><span class="metric-v">${d.debt}</span></div>
-      <div class="metric-row"><span class="metric-k">LTV</span><span class="metric-v" style="color:${ltvCol}">${d.ltv}%</span></div>
-      ${d.status==='warning'?'<div style="font-size:11px; color:var(--red-text); margin-top:6px; display:flex; align-items:center; gap:4px;"><i class="ti ti-alert-triangle"></i> Refinancing required &lt;90 days</div>':''}
-    </div>`;
-  } else {
-    spvHtml = '<div style="font-size:12px; color:var(--text2); padding:6px 0;">No SPV — direct balance sheet financing</div>';
-  }
-  document.getElementById('panel-title').textContent = d.name;
-  document.getElementById('panel-sub').textContent = d.sub;
-  document.getElementById('panel-body').innerHTML = `
-    <span class="status-pill" style="background:${sm.bg}; color:${sm.col};">${sm.label}</span>
-    <div class="section-title">Key metrics</div>
-    <div class="metric-row"><span class="metric-k"><i class="ti ti-bolt"></i> Capacity</span><span class="metric-v">${d.mw} MW</span></div>
-    <div class="metric-row"><span class="metric-k"><i class="ti ti-cpu"></i> GPU types</span><span class="metric-v">${d.gpu}</span></div>
-    <div class="metric-row"><span class="metric-k"><i class="ti ti-building"></i> Operator</span><span class="metric-v">${d.op}</span></div>
-    <div class="metric-row"><span class="metric-k"><i class="ti ti-users"></i> Occupancy</span><span class="metric-v">${d.occ}%</span></div>
-    <div class="section-title">Profitability</div>
-    <div class="irr-bar-wrap">
-      <div class="irr-bar-header"><span style="color:var(--text2)">IRR</span><span style="font-weight:700; color:${irrCol(d.irr)}">${d.irr}%</span></div>
-      <div class="irr-bar-bg"><div class="irr-bar" style="width:${irrW}%; background:${irrCol(d.irr)};"></div></div>
+function renderAssetList(){
+  const el=document.getElementById('asset-list-body');
+  const assets=filteredAssets();
+  el.innerHTML=assets.map(a=>`
+    <div class="asset-row${a.id===selectedId?' sel':''}" onclick="openAsset('${a.id}')">
+      <div class="ar-top">
+        <div>
+          <div class="ar-name">${a.name}</div>
+          <div class="ar-sub">${a.sub}</div>
+        </div>
+        <span class="score-pill" style="background:${scoreColor(a.score)}22;color:${scoreColor(a.score)}">${a.score}</span>
+      </div>
+      <div class="ar-metrics">
+        <div class="arm">IRR <span style="color:${irrColor(a.irr)}">${a.irr}%</span></div>
+        <div class="arm">EV/MW <span>$${a.ev_mw}M</span></div>
+        <div class="arm">Yield <span>${a.cash_yield}%</span></div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:3px">
+        ${a.spv?`<span class="spv-tag">SPV</span>`:''}
+        ${a.status==='warning'?`<span class="warn-tag"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Refi risk</span>`:''}
+        ${a.status==='construction'?`<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:var(--amber-bg);color:var(--amber-t);font-weight:500">Building</span>`:''}
+      </div>
     </div>
-    <div class="metric-row"><span class="metric-k">EBITDA / MW / yr</span><span class="metric-v">$${d.ebitda}M</span></div>
-    <div class="metric-row"><span class="metric-k">Credit rating</span><span class="metric-v">${d.rating}</span></div>
-    <div class="section-title">Cost structure</div>
-    <div class="metric-row"><span class="metric-k">Power cost</span><span class="metric-v">${d.elec}</span></div>
-    <div class="metric-row"><span class="metric-k">Land value</span><span class="metric-v">${d.land}</span></div>
-    <div class="metric-row"><span class="metric-k">CAPEX / MW</span><span class="metric-v">${d.capex}</span></div>
-    <div class="metric-row"><span class="metric-k">Tax incentives</span><span class="metric-v">${d.tax}</span></div>
-    <div class="section-title">SPV structure</div>
-    ${spvHtml}
-  `;
-  document.getElementById('detail-panel').classList.add('open');
+  `).join('');
 }
-function closeDetail() { document.getElementById('detail-panel').classList.remove('open'); }
 
-// IRR sidebar list
-function buildIRRList() {
-  const sorted = [...DC].sort((a,b) => b.irr - a.irr);
-  const el = document.getElementById('irr-list');
-  el.innerHTML = sorted.map(d => `
-    <div style="display:flex; align-items:center; gap:6px; padding:4px 0; cursor:pointer; border-bottom:0.5px solid var(--border);" onclick="showDetail('${d.id}')">
-      <div class="filter-dot" style="background:${d.color}"></div>
-      <span style="font-size:11px; color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.name.split(',')[0]}</span>
-      <span style="font-size:11px; font-weight:700; color:${irrCol(d.irr)}; flex-shrink:0;">${d.irr}%</span>
+function openAsset(id){
+  selectedId=id;
+  renderAssetList();
+  const a=ASSETS.find(x=>x.id===id);
+  renderDetail(a);
+}
+
+let scenChart=null;
+function renderDetail(a){
+  const pane=document.getElementById('detail-pane');
+  const irrW=Math.min(100,(a.irr/30)*100).toFixed(0);
+  const capexTotal=a.capex.land+a.capex.power+a.capex.build+a.capex.network;
+
+  pane.innerHTML=`
+  <div style="display:flex;flex-direction:column;height:100%">
+  <div class="inv-header">
+    <div>
+      <div class="inv-title">${a.name}</div>
+      <div class="inv-sub">${a.sub} · ${a.mw} MW · Rating: ${a.rating}</div>
+    </div>
+    <div class="inv-actions">
+      <span class="score-pill" style="background:${statusBg(a.status)};color:${statusCol(a.status)};font-size:11px;padding:4px 9px;border-radius:999px;font-weight:500">${statusLabel(a.status)}</span>
+      <button class="btn-sm" onclick="sendPrompt('Give me a full investment memo for ${a.name} — ${a.mw}MW, IRR ${a.irr}%, $${a.ev_mw}M EV/MW, ${a.spv?a.spvname+' SPV':'no SPV structure'}. Include debt sizing, exit assumptions and key risks.')"><i class="ti ti-file-analytics" aria-hidden="true"></i> Full memo ↗</button>
+    </div>
+  </div>
+  <div class="inv-body" style="flex:1;overflow-y:auto">
+
+    <!-- VALUATION -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-chart-pie-2" aria-hidden="true"></i> Valuation</div></div>
+      <div class="sec-body">
+        <div class="val-grid">
+          <div class="val-card" style="border:1.5px solid ${irrColor(a.irr)}44">
+            <div class="val-v" style="color:${irrColor(a.irr)}">${a.irr_lo}–${a.irr_hi}%</div>
+            <div class="val-l">IRR range</div>
+            <div class="val-d">Base case ${a.irr}%</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v">$${a.ev_mw}M</div>
+            <div class="val-l">EV / MW</div>
+            <div class="val-d">$${(a.ev_total/1000).toFixed(1)}B total EV</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v">${a.cash_yield}%</div>
+            <div class="val-l">Cash yield (stab.)</div>
+            <div class="val-d">EBITDA $${a.ebitda_mw}M/MW</div>
+          </div>
+          <div class="val-card">
+            <div class="val-v" style="color:${scoreColor(a.score)}">${a.score}/100</div>
+            <div class="val-l">Composite score</div>
+            <div class="val-d">Risk-adj. quality</div>
+          </div>
+        </div>
+        <div class="irr-bar-wrap" style="margin-top:12px">
+          <div class="irr-row"><span style="color:var(--t2)">IRR confidence band</span><span style="font-weight:500;color:${irrColor(a.irr)}">${a.irr_lo}% → ${a.irr_hi}%</span></div>
+          <div class="irr-bg"><div class="irr-fill" style="width:${irrW}%;background:${irrColor(a.irr)}"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SITE SCORE -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-award" aria-hidden="true"></i> Site scoring (0–100)</div></div>
+      <div class="sec-body">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="score-ring">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="30" fill="none" stroke="var(--color-border-tertiary)" stroke-width="6"/>
+              <circle cx="36" cy="36" r="30" fill="none" stroke="${scoreColor(a.score)}" stroke-width="6" stroke-dasharray="${(a.score/100)*188.5} 188.5" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+            </svg>
+            <div class="score-num" style="color:${scoreColor(a.score)}">${a.score}</div>
+          </div>
+          <div class="score-breakdown">
+            ${[
+              ['Power availability',a.score_power,30],
+              ['Demand proximity',a.score_demand,20],
+              ['Connectivity',a.score_conn,20],
+              ['Regulation / tax',a.score_reg,15],
+              ['Cost base',a.score_cost,15],
+            ].map(([l,v,max])=>`<div class="sb-row"><div class="sb-label">${l}</div><div class="sb-bar-w"><div class="sb-bar" style="width:${(v/max)*100}%"></div></div><div class="sb-val">${v}/${max}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENERGY FINGERPRINT -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-bolt" aria-hidden="true"></i> Energy fingerprint</div></div>
+      <div class="sec-body">
+        <div class="energy-grid">
+          <div class="e-card">
+            <div class="e-v">${a.elec_avail} MW</div>
+            <div class="e-l">Available now</div>
+            <div class="e-status" style="background:${a.elec_avail>500?'#EAF3DE':'#FAEEDA'};color:${a.elec_avail>500?'#3B6D11':'#854F0B'}">${a.elec_avail>500?'Unconstrained':'Constrained'}</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">${a.elec_pipeline} MW</div>
+            <div class="e-l">In pipeline</div>
+            <div class="e-status" style="background:var(--blue-bg);color:var(--blue-t)">Permitted</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">$${a.elec_price}/MWh</div>
+            <div class="e-l">Power cost</div>
+            <div class="e-status" style="background:${a.elec_price<50?'#EAF3DE':a.elec_price<90?'#FAEEDA':'#FCEBEB'};color:${a.elec_price<50?'#3B6D11':a.elec_price<90?'#854F0B':'#A32D2D'}">${a.elec_price<50?'Competitive':a.elec_price<90?'Mid-range':'Expensive'}</div>
+          </div>
+          <div class="e-card">
+            <div class="e-v">PUE ${a.pue}</div>
+            <div class="e-l">Efficiency</div>
+            <div class="e-status" style="background:${a.pue<1.35?'#EAF3DE':a.pue<1.5?'#FAEEDA':'#FCEBEB'};color:${a.pue<1.35?'#3B6D11':a.pue<1.5?'#854F0B':'#A32D2D'}">${a.pue<1.35?'Efficient':a.pue<1.5?'Average':'Inefficient'}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="mrow"><span class="mk">Grid congestion risk</span><span class="mv">${a.grid_risk}</span></div>
+          <div class="mrow"><span class="mk">Annual energy draw</span><span class="mv">${(a.mw*a.pue*8.76/1000).toFixed(2)} TWh</span></div>
+          <div class="mrow"><span class="mk">Annual energy cost</span><span class="mv">$${Math.round(a.mw*a.pue*8760*a.elec_price/1e6)}M</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPV / CAPEX STACK -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-building-bank" aria-hidden="true"></i> Capital structure &amp; SPV</div></div>
+      <div class="sec-body">
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:500;color:var(--t2);margin-bottom:8px">Capex stack — % of total</div>
+          ${[['Land / site',a.capex.land,'#888780'],['Power infra',a.capex.power,'#185FA5'],['Build / civil',a.capex.build,'#1D9E75'],['Network / fiber',a.capex.network,'#D85A30']].map(([l,v,c])=>`
+          <div class="capex-row">
+            <div class="capex-label">${l}</div>
+            <div class="capex-bar-w"><div class="capex-bar" style="width:${v}%;background:${c}"></div></div>
+            <div class="capex-val">${v}%</div>
+          </div>`).join('')}
+          <div class="mrow" style="margin-top:8px"><span class="mk">Total CAPEX/MW</span><span class="mv">$${a.capex_mw}M</span></div>
+        </div>
+        ${a.spv?`
+        <div style="background:${a.spv_risk==='critical'?'#FCEBEB':a.spv_risk==='high'?'#FAEEDA':'var(--bg2)'};border-radius:var(--r);padding:10px;border:0.5px solid ${a.spv_risk==='critical'?'#F7C1C1':a.spv_risk==='high'?'#FAC775':'var(--bdr)'}">
+          <div style="font-size:11px;font-weight:500;color:${riskT(a.spv_risk)};margin-bottom:6px"><i class="ti ti-building-bank" aria-hidden="true"></i> ${a.spvname}</div>
+          <div class="mrow"><span class="mk">Total debt</span><span class="mv">$${(a.debt/1000).toFixed(1)}B</span></div>
+          <div class="mrow"><span class="mk">LTV</span><span class="mv" style="color:${a.ltv>70?'#A32D2D':a.ltv>60?'#854F0B':'#3B6D11'}">${a.ltv}%</span></div>
+          <div class="mrow"><span class="mk">Interest rate</span><span class="mv">${a.debt_rate}% fixed</span></div>
+          <div class="mrow"><span class="mk">Maturity</span><span class="mv">${a.maturity}</span></div>
+          <div class="mrow"><span class="mk">Offtake contracts</span><span class="mv">${a.offtake}</span></div>
+        </div>`:`
+        <div class="mrow"><span class="mk">Structure</span><span class="mv">Direct balance sheet</span></div>
+        <div class="mrow"><span class="mk">Debt</span><span class="mv">$${(a.debt/1000).toFixed(1)}B</span></div>
+        <div class="mrow"><span class="mk">LTV</span><span class="mv">${a.ltv}%</span></div>
+        <div class="mrow"><span class="mk">Offtake</span><span class="mv">${a.offtake}</span></div>`}
+        <div class="mrow" style="margin-top:6px"><span class="mk">Subsidies / incentives</span><span class="mv">${a.subsidies}</span></div>
+        <div class="mrow"><span class="mk">Exit cap rate assumption</span><span class="mv">${a.exit_cap}%</span></div>
+      </div>
+    </div>
+
+    <!-- SCENARIO ENGINE -->
+    <div class="section">
+      <div class="sec-head"><div class="sec-title"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Scenario stress engine</div></div>
+      <div class="sec-body">
+        <div class="scenario-wrap" id="scen-${a.id}">
+          <div class="sc-slider-row"><div class="sc-label">Energy price shock (%)</div><input type="range" class="sc-range" min="-30" max="60" value="0" step="5" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ep-${a.id}">0%</div></div>
+          <div class="sc-slider-row"><div class="sc-label">Occupancy delay (months)</div><input type="range" class="sc-range" min="0" max="24" value="0" step="3" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-od-${a.id}">0mo</div></div>
+          <div class="sc-slider-row"><div class="sc-label">CAPEX inflation (%)</div><input type="range" class="sc-range" min="0" max="40" value="0" step="5" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ci-${a.id}">0%</div></div>
+          <div class="sc-slider-row"><div class="sc-label">Interest rate shift (bps)</div><input type="range" class="sc-range" min="-100" max="400" value="0" step="25" oninput="runScenario('${a.id}')"><div class="sc-val" id="sc-ir-${a.id}">0</div></div>
+          <div class="sc-results" id="sc-results-${a.id}">
+            <div class="sc-res"><div class="sc-rv" id="sc-irr-${a.id}" style="color:${irrColor(a.irr)}">${a.irr}%</div><div class="sc-rl">Stressed IRR</div><div class="sc-delta" id="sc-irrd-${a.id}" style="color:var(--t3)">Base</div></div>
+            <div class="sc-res"><div class="sc-rv" id="sc-dscr-${a.id}">—</div><div class="sc-rl">DSCR</div><div class="sc-delta" id="sc-dscrd-${a.id}" style="color:var(--t3)">—</div></div>
+            <div class="sc-res"><div class="sc-rv" id="sc-ev-${a.id}">$${a.ev_mw}M</div><div class="sc-rl">EV/MW</div><div class="sc-delta" id="sc-evd-${a.id}" style="color:var(--t3)">Base</div></div>
+          </div>
+        </div>
+        <button class="btn-sm primary" style="width:100%;justify-content:center;margin-top:10px" onclick="sendPrompt('Run a stress test for ${a.name}: energy +20%, capex +15%, interest rates +300bps, 6 month occupancy delay. What happens to the SPV DSCR and is there equity impairment?')"><i class="ti ti-report-analytics" aria-hidden="true"></i> Deep scenario analysis ↗</button>
+      </div>
+    </div>
+
+  </div></div>`;
+
+  runScenario(a.id);
+}
+
+function runScenario(id){
+  const a=ASSETS.find(x=>x.id===id);
+  const wrap=document.getElementById('scen-'+id);
+  if(!wrap) return;
+  const sliders=wrap.querySelectorAll('input[type=range]');
+  const ep=+sliders[0].value, od=+sliders[1].value, ci=+sliders[2].value, ir=+sliders[3].value;
+  document.getElementById('sc-ep-'+id).textContent=(ep>0?'+':'')+ep+'%';
+  document.getElementById('sc-od-'+id).textContent=od+'mo';
+  document.getElementById('sc-ci-'+id).textContent=(ci>0?'+':'')+ci+'%';
+  document.getElementById('sc-ir-'+id).textContent=(ir>0?'+':'')+ir+'bps';
+
+  const energyImpact=(ep/100)*a.mw*a.pue*8760*a.elec_price/1e6;
+  const capexImpact=(ci/100)*a.capex_mw*a.mw/1e3;
+  const occPenalty=od*0.5;
+  const interestImpact=(ir/10000)*a.debt/1e3;
+  const irrStressed=Math.max(2, a.irr - (ep/100)*6 - od*0.25 - (ci/100)*2 - (ir/100)*0.15).toFixed(1);
+  const irrDelta=(irrStressed-a.irr).toFixed(1);
+
+  const annualEBITDA=a.ebitda_mw*a.mw;
+  const annualDebt=(a.debt/1000)*(a.debt_rate/100);
+  const dscrBase=annualEBITDA/annualDebt;
+  const dscrStressed=Math.max(0.5,(annualEBITDA-energyImpact-occPenalty*a.ebitda_mw)/(annualDebt+interestImpact)).toFixed(2);
+  const dscrDelta=(dscrStressed-dscrBase).toFixed(2);
+
+  const evStressed=Math.max(3,(a.ev_mw*(1-(ci/100)*0.3-(ep/100)*0.2-(ir/10000)*2))).toFixed(1);
+  const evDelta=(evStressed-a.ev_mw).toFixed(1);
+
+  const irrEl=document.getElementById('sc-irr-'+id);
+  irrEl.textContent=irrStressed+'%';
+  irrEl.style.color=irrColor(Math.round(+irrStressed));
+  document.getElementById('sc-irrd-'+id).textContent=(irrDelta>0?'+':'')+irrDelta+'% vs base';
+  document.getElementById('sc-irrd-'+id).style.color=irrDelta<0?'#E24B4A':'#1D9E75';
+
+  const dscrEl=document.getElementById('sc-dscr-'+id);
+  dscrEl.textContent=dscrStressed+'x';
+  dscrEl.style.color=+dscrStressed<1.2?'#E24B4A':+dscrStressed<1.5?'#BA7517':'#1D9E75';
+  document.getElementById('sc-dscrd-'+id).textContent=(dscrDelta>0?'+':'')+dscrDelta+' vs base';
+  document.getElementById('sc-dscrd-'+id).style.color=+dscrDelta<0?'#E24B4A':'#1D9E75';
+
+  document.getElementById('sc-ev-'+id).textContent='$'+evStressed+'M';
+  document.getElementById('sc-evd-'+id).textContent=(evDelta>0?'+$':'$')+evDelta+'M vs base';
+  document.getElementById('sc-evd-'+id).style.color=+evDelta<0?'#E24B4A':'#1D9E75';
+}
+
+function filterR(r,el){
+  currentRegion=r;
+  document.querySelectorAll('.fi').forEach(f=>f.classList.remove('on'));
+  el.classList.add('on');
+  renderAssetList();
+}
+function searchAssets(v){window._search=v.toLowerCase();renderAssetList();}
+function sortAssets(v){sortKey=v;renderAssetList();}
+
+function goTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-assets').style.display=tab==='assets'?'flex':'none';
+  document.getElementById('tab-compare').style.display=tab==='compare'?'block':'none';
+  document.getElementById('tab-spv').style.display=tab==='spv'?'block':'none';
+  if(tab==='compare') renderCompare();
+  if(tab==='spv') renderSPV();
+}
+
+function renderCompare(){
+  const el=document.getElementById('compare-cards');
+  el.innerHTML=ASSETS.map(a=>`
+    <div class="cmp-card${compareSet.has(a.id)?' selected':''}" onclick="toggleCompare('${a.id}',this)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div class="cmp-name">${a.name}</div>
+        <span style="font-size:10px;font-weight:500;padding:2px 6px;border-radius:999px;background:${scoreColor(a.score)}22;color:${scoreColor(a.score)}">${a.score}</span>
+      </div>
+      <div class="cmp-metrics">
+        <div class="cmp-m"><span class="cmp-mk">IRR</span><span class="cmp-mv" style="color:${irrColor(a.irr)}">${a.irr}%</span></div>
+        <div class="cmp-m"><span class="cmp-mk">EV/MW</span><span class="cmp-mv">$${a.ev_mw}M</span></div>
+        <div class="cmp-m"><span class="cmp-mk">Power</span><span class="cmp-mv">$${a.elec_price}/MWh</span></div>
+        <div class="cmp-m"><span class="cmp-mk">Cash yield</span><span class="cmp-mv">${a.cash_yield}%</span></div>
+        <div class="cmp-m"><span class="cmp-mk">LTV</span><span class="cmp-mv">${a.ltv}%</span></div>
+      </div>
+      <div class="cmp-score-bar" style="background:${scoreColor(a.score)};width:${a.score}%"></div>
+    </div>`).join('');
+  renderCompareTable();
+}
+
+function toggleCompare(id){
+  if(compareSet.has(id)) compareSet.delete(id);
+  else if(compareSet.size<5) compareSet.add(id);
+  renderCompare();
+}
+
+function renderCompareTable(){
+  const el=document.getElementById('compare-table-area');
+  const sel=ASSETS.filter(a=>compareSet.has(a.id));
+  if(sel.length<2){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">Select 2–5 assets to compare</div>';return;}
+  const metrics=[
+    ['IRR (%)',a=>a.irr,'irr',false],
+    ['EV / MW ($M)',a=>a.ev_mw,'ev_mw',false],
+    ['Cash yield (%)',a=>a.cash_yield,'cash_yield',false],
+    ['Power cost ($/MWh)',a=>a.elec_price,'elec_price',true],
+    ['CAPEX / MW ($M)',a=>a.capex_mw,'capex_mw',true],
+    ['PUE',a=>a.pue,'pue',true],
+    ['LTV (%)',a=>a.ltv,'ltv',true],
+    ['Site score',a=>a.score,'score',false],
+    ['Capacity (MW)',a=>a.mw,'mw',false],
+    ['Occupancy (%)',a=>a.occ,'occ',false],
+  ];
+  el.innerHTML=`<div class="compare-table-wrap"><table class="cmp-table">
+    <thead><tr><th>Metric</th>${sel.map(a=>`<th>${a.name.split(',')[0]}</th>`).join('')}</tr></thead>
+    <tbody>${metrics.map(([label,fn,key,lowerBetter])=>{
+      const vals=sel.map(fn);
+      const best=lowerBetter?Math.min(...vals):Math.max(...vals);
+      const worst=lowerBetter?Math.max(...vals):Math.min(...vals);
+      return `<tr><td style="color:var(--t2)">${label}</td>${sel.map(a=>{
+        const v=fn(a);
+        const cls=v===best?'best':v===worst&&vals.length>2?'worst':'';
+        return `<td class="${cls}">${v}</td>`;
+      }).join('')}</tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderSPV(){
+  const el=document.getElementById('spv-list');
+  el.innerHTML=SPV_LIST.map(s=>`
+    <div style="background:var(--bg);border:0.5px solid ${s.risk==='critical'?'#F7C1C1':s.risk==='high'?'#FAC775':'var(--bdr)'};border-radius:var(--rl);padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--t1)">${s.name}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:2px">${s.sponsors} · ${s.sites}</div>
+        </div>
+        <span style="font-size:10px;padding:3px 8px;border-radius:999px;background:${riskBg(s.risk)};color:${riskT(s.risk)};font-weight:600;flex-shrink:0">${s.risk.toUpperCase()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        <div class="sc"><div class="sv">$${(s.debt/1000).toFixed(1)}B</div><div class="sl">Debt</div></div>
+        <div class="sc"><div class="sv" style="color:${s.ltv>70?'#A32D2D':s.ltv>60?'#854F0B':'#3B6D11'}">${s.ltv}%</div><div class="sl">LTV</div></div>
+        <div class="sc"><div class="sv">${s.dscr>0?s.dscr+'x':'N/A'}</div><div class="sl">DSCR</div></div>
+        <div class="sc"><div class="sv">${s.maturity}</div><div class="sl">Maturity</div></div>
+      </div>
+      ${s.rate_fixed?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px">Fixed ${s.rate_fixed}% → Float ${s.rate_float}%+ on refinancing</div>`:''}
+      ${s.alert?`<div style="background:${riskBg(s.risk)};color:${riskT(s.risk)};border-radius:var(--r);padding:7px 9px;font-size:11px;display:flex;gap:6px"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>${s.alert}</span></div>`:''}
     </div>`).join('');
 }
 
-// Tab switching
-function switchTab(tab, btn) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('map-view').style.display = tab==='map' ? 'flex' : 'none';
-  document.getElementById('economics-view').style.display = tab==='economics' ? 'block' : 'none';
-  document.getElementById('spv-view').style.display = tab==='spv' ? 'block' : 'none';
-  if (tab !== 'map') closeDetail();
-  if (tab === 'economics') setTimeout(calcIRR, 50);
-}
-function filterRegion(r, el) {
-  document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-}
-
-// Dark mode
-function toggleTheme() {
-  const isDark = document.body.getAttribute('data-theme') === 'dark';
-  document.body.setAttribute('data-theme', isDark ? '' : 'dark');
-  document.getElementById('theme-icon').className = isDark ? 'ti ti-moon-stars' : 'ti ti-sun';
-}
-
-// Economics calculator
-let ecoChart = null;
-function calcIRR() {
-  const sliders = document.querySelectorAll('#economics-view input[type=range]');
-  const mw = +sliders[0].value;
-  const elec = +sliders[1].value;
-  const pue = +sliders[2].value / 100;
-  const colo = +sliders[3].value;
-  const capexPM = +sliders[4].value;
-  const occ = +sliders[5].value / 100;
-
-  document.getElementById('v-mw').textContent = mw;
-  document.getElementById('v-elec').textContent = '$' + elec;
-  document.getElementById('v-pue').textContent = pue.toFixed(2);
-  document.getElementById('v-colo').textContent = '$' + colo;
-  document.getElementById('v-capex').textContent = capexPM.toFixed(1);
-  document.getElementById('v-occ').textContent = Math.round(occ * 100);
-
-  const rev = mw * 1000 * colo * 12 * occ / 1e6;
-  const energyCost = mw * pue * 8760 * elec / 1e6;
-  const opex = rev * 0.12;
-  const ebitda = rev - energyCost - opex;
-  const capexTotal = mw * capexPM;
-  const payback = ebitda > 0 ? capexTotal / ebitda : 99;
-  const irr = ebitda > 0 ? Math.min(38, Math.max(4, (ebitda / capexTotal) * 100 * 1.42)) : 0;
-
-  document.getElementById('r-irr').textContent = irr.toFixed(1) + '%';
-  document.getElementById('r-irr').style.color = irrCol(Math.round(irr));
-  document.getElementById('r-ebitda').textContent = '$' + ebitda.toFixed(0) + 'M';
-  document.getElementById('r-rev').textContent = '$' + rev.toFixed(0) + 'M';
-  document.getElementById('r-payback').textContent = Math.min(payback, 99).toFixed(1) + 'yr';
-
-  // Chart
-  const labels = Array.from({length:10}, (_,i) => 'Y' + (i+1));
-  const cf = labels.map((_,i) => {
-    const base = ebitda * (1 + i * 0.03);
-    return Math.round(i === 0 ? base - capexTotal * 0.35 : base);
-  });
-
-  if (ecoChart) ecoChart.destroy();
-  ecoChart = new Chart(document.getElementById('eco-chart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ label: 'Cashflow ($M)', data: cf, backgroundColor: cf.map(v => v >= 0 ? '#378ADD' : '#E24B4A'), borderRadius: 3 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { callback: v => '$' + v + 'M', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.08)' } },
-        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
-      }
-    }
-  });
-
-  // Geo compare
-  const geoData = [
-    { name: 'Malaysia', elecMod: 0.45 * elec, irr_boost: 1.55 },
-    { name: 'Stockholm', elecMod: 0.28 * elec, irr_boost: 1.48 },
-    { name: 'Oregon', elecMod: 0.30 * elec, irr_boost: 1.45 },
-    { name: 'Riyadh', elecMod: 0.22 * elec, irr_boost: 1.40 },
-    { name: 'Ashburn', elecMod: 0.55 * elec, irr_boost: 1.35 },
-    { name: 'Singapore', elecMod: 0.85 * elec, irr_boost: 1.25 },
-    { name: 'Amsterdam', elecMod: 0.88 * elec, irr_boost: 1.10 },
-    { name: 'London', elecMod: 0.92 * elec, irr_boost: 1.05 },
-    { name: 'Frankfurt', elecMod: elec, irr_boost: 1.0 },
-    { name: 'São Paulo', elecMod: 1.15 * elec, irr_boost: 0.88 },
-    { name: 'Tokyo', elecMod: 1.20 * elec, irr_boost: 0.82 },
-  ];
-  const baseIRR = irr;
-  const maxIRR = baseIRR * 1.55;
-  const rows = document.getElementById('geo-compare-rows');
-  rows.innerHTML = geoData.map(g => {
-    const gIRR = Math.min(38, Math.max(3, baseIRR * g.irr_boost)).toFixed(1);
-    const pct = Math.round((gIRR / maxIRR) * 100);
-    const col = irrCol(Math.round(+gIRR));
-    const elecLabel = '$' + Math.round(g.elecMod) + '/MWh';
-    return `<div class="geo-row">
-      <div class="geo-name">${g.name}</div>
-      <div class="geo-bar-wrap"><div class="geo-bar-bg"><div class="geo-bar-fill" style="width:${pct}%; background:${col};"></div></div></div>
-      <div class="geo-irr" style="color:${col}">${gIRR}%</div>
-      <div class="geo-elec">${elecLabel}</div>
-    </div>`;
-  }).join('');
-}
-
-// Init
-buildMarkers();
-buildIRRList();
-setTimeout(calcIRR, 200);
+renderAssetList();
 </script>
-</body>
-</html>
-HTMLEOF
-echo "Done. File size: $(wc -c < /mnt/user-data/outputs/datacenteriq.html) bytes"
-Output
-
-Done. File size: 47453 bytes
-Done
-
-You are out of free messages until 6:10 PM
-Claude Fable 5 is currently unavailable.
-Learn more(opens in new tab)
